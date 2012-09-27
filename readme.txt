@@ -14,13 +14,13 @@ Add-on field for Advanced Custom Fields that provides input masking and validati
 
 The Validated Field add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) provides a wrapper for other 
 input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either
-PHP regular expressions or PHP code, as well as the option of ensuring a field's uniqueness by post type &amp key, post type, or side wide.
+PHP regular expressions or PHP code, as well as the option of ensuring a field's uniqueness by post type &amp; key, post type, or side wide.
 
 == Installation ==
 
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure validated fields withing the Advanced Custom Fields menus
+3. Configure validated fields within the Advanced Custom Fields menus
 
 Please note that this plugin requires [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/).
 
