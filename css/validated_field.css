@@ -1,0 +1,7 @@
+.validated-field .validation-errors {
+	display:none;
+	padding: 10px;
+	border-radius: 5px;
+	border: 1px solid #C00;
+	margin-bottom: 10px;
+}
