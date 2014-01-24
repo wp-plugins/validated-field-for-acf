@@ -1,4 +1,5 @@
 
+
 var vf = {
 	valid : false
 };
@@ -16,17 +17,17 @@ var vf = {
 
 	function do_validation(){
 		fields = [];
-		$('.field-validated_field .validation-errors').empty().hide();;
-		$('.field-validated_field').removeClass('error');
+		$('.validated-field .validation-errors').empty().hide();;
+		$('.validated-field').removeClass('error');
 
-		$('.field-validated_field:visible').each(function(){
+		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
 			
 			$(this).find('input[type="text"], input[type="hidden"], textarea, select, input[type="checkbox"]:checked').each(function(index, elem){
 				var field = { 
 						id: $(elem).attr('name'),
-						value: $(elem).attr('value'),
-						message: 'Server-side validation error.',
+						value: $(elem).val(),
+						//message: 'Server-side validation error.',
 						valid: false,
 				};
 				fields.push(field);
@@ -59,17 +60,19 @@ var vf = {
 					if (!fld.valid){
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
-						$('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]').closest('.field').addClass('error').find('.validation-errors').append("<div>"+msg+"</div>").show();
+						field = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]').closest('.field');
+						field.addClass('error').find('.validation-errors').append('<div>'+msg+'</div>').show();
+						field.find('.widefat').css('width','100%');
 					}
 				}
 				vf.valid = valid;
 			}
 			
-			if(!vf.valid) {
+			if(vf.valid) {
+				$('#publish').click();
+			} else {
 				$('#publish').removeClass('button-primary-disabled');
 				$('#ajax-loading').attr('style','');
-			} else {
-				$('#publish').click();
 			}
 			
 			$('.acf_postbox:hidden').remove();

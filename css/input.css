@@ -5,3 +5,6 @@
 	border: 1px solid #C00;
 	margin-bottom: 10px;
 }
+
+.validated-select { width: 200px; }
+.validation-type { display: none; }
