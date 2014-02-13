@@ -219,7 +219,7 @@ class acf_field_validated_field extends acf_field{
 											do_action('acf/create_field', array(
 												'type'	=>	'select',
 												'name'	=>	'fields[' . $key . '][sub_field][type]',
-												'value'	=>	$sub_field['label'],
+												'value'	=>	isset($sub_field['label'])? $sub_field['label'] : "",
 												'class'	=>	'type',
 												'choices' => $fields_names
 											));
@@ -228,7 +228,7 @@ class acf_field_validated_field extends acf_field{
 											</td>
 										</tr>
 										<?php 
-										if (isset($this->parent->fields[$sub_field['type']])){
+										if (isset($sub_field['type']) && isset($this->parent->fields[$sub_field['type']])){
 											$this->parent->fields[$sub_field['type']]->create_options($key.'][sub_field', $sub_field);
 										}
 	
@@ -257,7 +257,7 @@ class acf_field_validated_field extends acf_field{
 				do_action('acf/create_field', array(
 					'type'	=>	'text',
 					'name'	=>	'fields[' . $key . '][mask]',
-					'value'	=>	$field['mask']
+					'value'	=>	isset($field['mask'])? $field['mask'] : ""
 				));
 
 				?>
@@ -378,7 +378,7 @@ class acf_field_validated_field extends acf_field{
 			do_action('acf/create_field', array(
 				'type'	=>	'text',
 				'name'	=>	'fields['.$key.'][message]',
-				'value'	=>	$field['message']
+				'value'	=>	isset($field['message'])? $field['message'] : ""
 			)); 
 			?>
 			</td>
@@ -397,7 +397,7 @@ class acf_field_validated_field extends acf_field{
 			do_action('acf/create_field', array(
 				'type'	=>	'select',
 				'name'	=>	'fields[' . $key . '][unique]',
-				'value'	=>	$field['unique'],
+				'value'	=>	isset($field['unique'])? $field['unique'] : "",
 				'choices' => array($choices),
 				'optgroup' => false,
 				'multiple'	=>	'0',

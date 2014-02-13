@@ -19,7 +19,7 @@ PHP regular expressions or PHP code, as well as the option of ensuring a field's
 
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure validated fields withing the Advanced Custom Fields menus
+3. Configure validated fields within the Advanced Custom Fields menus
 
 Please note that this plugin requires [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) and only works with version 4 or greater.
 
@@ -36,9 +36,12 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 == Changelog ==
 
-= 0.1 =
-* Initial version.
+= 1.0.1 =
+* Clean up strict warnings
 
 = 1.0 =
 * Update for compatibility with Advanced Custom Fields 4+
 * Implement ace.js for syntax highlighting
+
+= 0.1 =
+* Initial version.
