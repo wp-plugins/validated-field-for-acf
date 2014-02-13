@@ -7,7 +7,7 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Add-on field for Advanced Custom Fields 4+ that provides input masking and validation of other fields types.
+Add-on field for Advanced Custom Fields 4+ that provides input masking and validation of other field types.
 
 == Description ==
 
@@ -32,7 +32,10 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 == Screenshots ==
 
-1. Screen shots coming soon.
+1. Example configuration for a validate telephone number field. 
+2. Example of a conflict - the same telephone number already exists
+3. Example of PHP validation - checking the length of a field
+4. Example of PHP validation failure
 
 == Changelog ==
 
