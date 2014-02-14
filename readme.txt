@@ -33,8 +33,11 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 == Screenshots ==
 
 1. Example configuration for a validate telephone number field. 
+
 2. Example of a conflict - the same telephone number already exists
+
 3. Example of PHP validation - checking the length of a field
+
 4. Example of PHP validation failure
 
 == Changelog ==
