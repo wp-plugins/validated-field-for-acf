@@ -423,7 +423,6 @@ class acf_field_validated_field extends acf_field{
 	*  @since	3.6
 	*  @date	23/01/13
 	*/
-
 	function create_field( $field ){
 		// defaults?
 		$field = array_merge($this->defaults, $field);
@@ -630,8 +629,6 @@ class acf_field_validated_field extends acf_field{
 	function format_value_for_api( $value, $post_id, $field ){
 		// defaults?
 		$field = array_merge($this->defaults, $field);
-
-		//error_log(print_r($field, true));
 
 		$sub_field = $this->setup_sub_field($field);
 
