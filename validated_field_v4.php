@@ -219,7 +219,7 @@ class acf_field_validated_field extends acf_field{
 											do_action('acf/create_field', array(
 												'type'	=>	'select',
 												'name'	=>	'fields[' . $key . '][sub_field][type]',
-												'value'	=>	isset($sub_field['label'])? $sub_field['label'] : "",
+												'value'	=>	isset($sub_field['type'])? $sub_field['type'] : "",
 												'class'	=>	'type',
 												'choices' => $fields_names
 											));
@@ -366,7 +366,10 @@ class acf_field_validated_field extends acf_field{
 		    		editor.gotoLine(1, 1, false);
 				});
 
+				// update function ui
 				jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
+				// update sub field type ui
+				jQuery('#acf-field-<?php echo $key; ?>_sub_field_type').trigger('change');
 			</script>
 			</td>
 		</tr>
@@ -632,15 +635,9 @@ class acf_field_validated_field extends acf_field{
 
 		$sub_field = $this->setup_sub_field($field);
 
-		//$v = apply_filters('acf/load_value', false, $post_id, $sub_field);
 		$value = apply_filters('acf/format_value_for_api', $value, $post_id, $sub_field);
-		//error_log($value);
-		return $value;
-		//$fld = get_field_object($field['key'], $post_id); // load the field config
 
-		//$sub_field = $this->setup_sub_field($field);
-		//error_log(print_r($fld->get_value_for_api($field['key'], $post_id), true));
-		//return $this->parent->fields[$field['sub_field']['type']]->get_value_for_api($post_id, $sub_field);
+		return $value;
 	}
 
 	/*
