@@ -42,6 +42,9 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 == Changelog ==
 
+= 1.0.3 =
+* Bug fix for unique field values per post_type. Props @ikivanov.
+
 = 1.0.2 =
 * Bug fix for editing a validated field. Ensure proper type is selected and UI refresh is triggered. Props @fab4_33.
 

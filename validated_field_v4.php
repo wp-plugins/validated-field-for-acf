@@ -130,7 +130,7 @@ class acf_field_validated_field extends acf_field{
 						break;
 					case 'post_type':
 						// check to see if this value exists in the postmeta table with this $post_id
-						$sql = $wpdb->prepare("{$sql_prefix} and p.post_type = %s where post_id != %d meta_value = %s", $post_type, $post_id, $val);
+						$sql = $wpdb->prepare("{$sql_prefix} and p.post_type = %s where post_id != %d and meta_value = %s", $post_type, $post_id, $val);
 						break;
 					case 'post_key':
 						// check to see if this value exists in the postmeta table with both this $post_id and $meta_key
