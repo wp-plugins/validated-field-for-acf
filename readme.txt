@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input
 Requires at least: 3.0.1
 Tested up to: 3.8.1
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+
+= 1.0.4 =
+* Fix javascript error when including ace.js, props @nikademo.
+* Fix “Undefined index” PHP notice, props @ikivanov.
 
 = 1.0.3 =
 * Bug fix for unique field values per post_type. Props @ikivanov.
