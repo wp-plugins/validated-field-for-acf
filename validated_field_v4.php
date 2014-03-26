@@ -40,9 +40,9 @@ class acf_field_validated_field extends acf_field{
 
 	function setup_sub_field($field){
 		$sub_field = $field['sub_field'];
-		$sub_field['key'] = $field['key'];
-		$sub_field['name'] = $field['name'];
-		$sub_field['value'] = $field['value'];
+		$sub_field['key'] = isset( $field['key'] )? $field['key'] : '';
+		$sub_field['name'] = isset( $field['name'] )? $field['name'] : '';
+		$sub_field['value'] = isset( $field['value'] )? $field['value'] : '';
 		return $sub_field;
 	}
 	
