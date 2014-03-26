@@ -320,6 +320,7 @@ class acf_field_validated_field extends acf_field{
 				<div id="acf-field-<?php echo $key; ?>_editor" style="height:200px;"><?php echo $field['pattern']; ?></div>
 
 			<script type="text/javascript">
+			jQuery(document).ready(function(){
 				jQuery("#acf-field-<?php echo $key; ?>_pattern").hide();
 				var editor = ace.edit("acf-field-<?php echo $key; ?>_editor");
 			    editor.setTheme("ace/theme/monokai");
@@ -370,6 +371,7 @@ class acf_field_validated_field extends acf_field{
 				jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
 				// update sub field type ui
 				jQuery('#acf-field-<?php echo $key; ?>_sub_field_type').trigger('change');
+			});
 			</script>
 			</td>
 		</tr>
@@ -521,13 +523,8 @@ class acf_field_validated_field extends acf_field{
 	*  @date	23/01/13
 	*/
 	function field_group_admin_enqueue_scripts(){
-		// register scripts
-		wp_register_script( 'ace', $this->settings['dir'] . 'js/ace/ace.js', array('acf-input'), $this->settings['version'] );
-
 		// enqueue scripts
-		wp_enqueue_script(array(
-			'ace',
-		));
+		wp_enqueue_script( 'ace-editor', '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js', array(), $this->settings['version'] );
 	}
 
 	/*
