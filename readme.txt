@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input
 Requires at least: 3.0.1
 Tested up to: 3.8.1
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
