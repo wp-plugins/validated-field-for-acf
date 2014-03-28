@@ -73,6 +73,7 @@ var vf = {
 			} else {
 				$('#publish').removeClass('button-primary-disabled');
 				$('#ajax-loading').attr('style','');
+				$('#publishing-action .spinner').hide();
 			}
 			
 			$('.acf_postbox:hidden').remove();
