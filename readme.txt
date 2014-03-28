@@ -42,6 +42,11 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 == Changelog ==
 
+= 1.0.5 =
+* Hide spinner for update if a validation error is encountered.
+* Allow for uniqueness queries to apply to only published or all post statuses.
+* Clean up debugging code writing to the error log for regex validations.
+
 = 1.0.4 =
 * Fix javascript error when including ace.js, props @nikademo.
 * Fix “Undefined index” PHP notice, props @ikivanov.
