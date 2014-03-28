@@ -78,7 +78,6 @@ class acf_field_validated_field extends acf_field{
 				switch ($func){
 					case 'regex': 				// check for any matches to the regular expression
 						$ptrn_fltr = "/".str_replace("/", "\/", $ptrn)."/";
-						error_log($ptrn_fltr . " " . $val);
 						if (!preg_match($ptrn_fltr,$val)){
 							$vld = false; 		// return false if there are no matches
 						}
@@ -122,7 +121,8 @@ class acf_field_validated_field extends acf_field{
 				
 			$unq = $fld['unique'];
 			if ($vld && !empty($unq) && $unq!='non-unique'){
-				$sql_prefix = "select meta_id, post_id, p.post_title from {$wpdb->postmeta} pm join {$wpdb->posts} p on p.ID = pm.post_id and p.post_status = 'publish'";
+				$sql_prefix = "select meta_id, post_id, p.post_title from {$wpdb->postmeta} pm join {$wpdb->posts} p on p.ID = pm.post_id";
+				$sql_prefix.= ( isset($fld['unique_all'])? (bool) $fld['unique_all'] : false )? '' : " and p.post_status = 'publish'";
 				switch ($unq){
 					case 'global': 
 						// check to see if this value exists anywhere in the postmeta table
@@ -319,6 +319,59 @@ class acf_field_validated_field extends acf_field{
 				?>
 				<div id="acf-field-<?php echo $key; ?>_editor" style="height:200px;"><?php echo $field['pattern']; ?></div>
 
+			</td>
+		</tr>
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation">
+			<td class="label"><label><?php _e("Error Message",'acf'); ?> </label>
+			</td>
+			<td><?php 
+
+			do_action('acf/create_field', array(
+				'type'	=>	'text',
+				'name'	=>	'fields['.$key.'][message]',
+				'value'	=>	isset($field['message'])? $field['message'] : ""
+			)); 
+			?>
+			</td>
+		</tr>
+		<tr class="field_option field_option_<?php echo $this->name; ?>">
+			<td class="label"><label><?php _e("Unique Value?",'acf'); ?> </label>
+			</td>
+			<td>
+			<p><?php _e("Make sure this value is unique for...", 'acf_vf'); ?><br/>
+			<?php 
+			$choices = array(
+					"non-unique"=>"Non-Unique Value",
+					"global"=>"Unique Globally",
+					"post_type"=>"Unique For Post Type",
+					"post_key"=>"Unique For Post Type -> Key",
+			);
+
+			do_action('acf/create_field', array(
+				'type'	=>	'select',
+				'name'	=>	'fields[' . $key . '][unique]',
+				'value'	=>	isset($field['unique'])? $field['unique'] : "",
+				'choices' => array($choices),
+				'optgroup' => false,
+				'multiple'	=>	'0',
+				'class' => 'validated-select',
+			));
+			?>
+			</p>
+			<div class="unique_all">
+			<p><?php _e("Include all posts, not just published posts?", 'acf_vf'); ?><br/>
+			<?php
+			do_action('acf/create_field', array(
+				'type'	=>	'select',
+				'name'	=>	'fields['.$key.'][unique_all]',
+				'value'	=>	isset($field['unique_all'])? $field['unique_all'] : 'false',
+				'choices' => array("false"=>"No", "true"=>"Yes"),
+				'optgroup' => false,
+				'multiple'	=>	'0',
+				'class' => 'validated-select',
+			)); 
+			?></p>
+			</div>
 			<script type="text/javascript">
 			jQuery(document).ready(function(){
 				jQuery("#acf-field-<?php echo $key; ?>_pattern").hide();
@@ -367,48 +420,18 @@ class acf_field_validated_field extends acf_field{
 		    		editor.gotoLine(1, 1, false);
 				});
 
-				// update function ui
-				jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
-				// update sub field type ui
-				jQuery('#acf-field-<?php echo $key; ?>_sub_field_type').trigger('change');
+				jQuery('#acf-field-<?php echo $key; ?>_unique').on('change',function(){
+					var unqa = jQuery('.unique_all');
+					var val = jQuery(this).val();
+					if (val=='non-unique'||val=='') { unqa.hide(); } else { unqa.show(); }
+				});
 			});
+
+			// update ui
+			jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
+			jQuery('#acf-field-<?php echo $key; ?>_unique').trigger('change');
+			jQuery('#acf-field-<?php echo $key; ?>_sub_field_type').trigger('change');
 			</script>
-			</td>
-		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation">
-			<td class="label"><label><?php _e("Error Message",'acf'); ?> </label>
-			</td>
-			<td><?php 
-
-			do_action('acf/create_field', array(
-				'type'	=>	'text',
-				'name'	=>	'fields['.$key.'][message]',
-				'value'	=>	isset($field['message'])? $field['message'] : ""
-			)); 
-			?>
-			</td>
-		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?>">
-			<td class="label"><label><?php _e("Unique Value?",'acf'); ?> </label>
-			</td>
-			<td><?php 
-			$choices = array (
-					"non-unique"=>"Non-Unique Value",
-					"global"=>"Unique Globally",
-					"post_type"=>"Unique For Post Type",
-					"post_key"=>"Unique For Post Type -> Key",
-			);
-
-			do_action('acf/create_field', array(
-				'type'	=>	'select',
-				'name'	=>	'fields[' . $key . '][unique]',
-				'value'	=>	isset($field['unique'])? $field['unique'] : "",
-				'choices' => array($choices),
-				'optgroup' => false,
-				'multiple'	=>	'0',
-				'class' => 'validated-select',
-			));
-			?>
 			</td>
 		</tr>
 		<?php
