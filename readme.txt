@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input
 Requires at least: 3.0.1
 Tested up to: 3.8.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,14 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+
+= 1.0.6 =
+* Bug fix $sub_field properties not saving (use "acf/create_field_options" action).
+* Bug fix multiple Validated Fields in a set - correct to always use unique selectors.
+* Allow for unique query to be run on selected post statuses.
+* Set default statuses included in unique queries with filter of "acf_vf/unique_statuses".
+* Remove redundant table wrapper on validated fields.
+* Clean up potential strict PHP warnings.
 
 = 1.0.5 =
 * Hide spinner for update if a validation error is encountered.
