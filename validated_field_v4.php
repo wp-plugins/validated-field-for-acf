@@ -3,7 +3,11 @@ if (class_exists("acf_Field") && !class_exists("acf_field_validated_field")):
 class acf_field_validated_field extends acf_field{
 	// vars
 	var $settings, // will hold info such as dir / path
-		$defaults; // will hold default field options
+		$defaults, // will hold default field options
+		$unique_statuses = array(
+			'publish',
+			'future'
+		); // default posts statuses for unique query
 
 	/*
 	*  __construct
@@ -23,6 +27,9 @@ class acf_field_validated_field extends acf_field{
 			'function' => 'none',
 			'pattern' => '',
 		);
+
+		// the default checked statuses for unique queries
+		$this->unique_statuses = apply_filters( 'acf_vf/unique_statuses', $this->unique_statuses );
 
 		// do not delete!
     	parent::__construct();
@@ -45,7 +52,29 @@ class acf_field_validated_field extends acf_field{
 		$sub_field['value'] = isset( $field['value'] )? $field['value'] : '';
 		return $sub_field;
 	}
-	
+
+	/*
+	*  get_post_statuses()
+	*
+	*  Get the various post statuses that have been registered
+	*
+	*  @type 	function
+	*
+	*/
+    function get_post_statuses() {
+        global $wp_post_statuses;
+
+        return $wp_post_statuses;
+    }
+
+	/*
+	*  valid_date()
+	*
+	*  Ensure that a string is in the format YYYY-MM-DD h:m:i
+	*
+	*  @type 	function
+	*
+	*/
 	function valid_date($date){
 		if (preg_match('/^(\d{4})-(\d{2})-(\d{2}) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/', $date, $matches)) {
 			if (checkdate($matches[2], $matches[3], $matches[1])) {
@@ -55,7 +84,15 @@ class acf_field_validated_field extends acf_field{
 	
 		return false;
 	}
-	
+
+	/*
+	*  ajax_validate_fields()
+	*
+	*  Parse the input when a page is submitted to determine if it is valid or not.
+	*
+	*  @type 	ajax action
+	*
+	*/
 	function ajax_validate_fields() {
 		global $wpdb;
 		$post_id = isset( $_REQUEST['post_id'] )? $_REQUEST['post_id'] : 0 ;
@@ -121,8 +158,8 @@ class acf_field_validated_field extends acf_field{
 				
 			$unq = $fld['unique'];
 			if ($vld && !empty($unq) && $unq!='non-unique'){
-				$sql_prefix = "select meta_id, post_id, p.post_title from {$wpdb->postmeta} pm join {$wpdb->posts} p on p.ID = pm.post_id";
-				$sql_prefix.= ( isset($fld['unique_all'])? (bool) $fld['unique_all'] : false )? '' : " and p.post_status = 'publish'";
+				$status_in = "'".implode("','",(isset($fld['unique_statuses']))? $fld['unique_statuses'] : $this->unique_statuses)."'";
+				$sql_prefix = "select meta_id, post_id, p.post_title from {$wpdb->postmeta} pm join {$wpdb->posts} p on p.ID = pm.post_id and post_status in (".$status_in.")";
 				switch ($unq){
 					case 'global': 
 						// check to see if this value exists anywhere in the postmeta table
@@ -141,6 +178,7 @@ class acf_field_validated_field extends acf_field{
 						$sql = null;
 						break;
 				}
+
 				// Only run if we hit a condition above
 				if (!empty($sql)){
 					// Execute the SQL
@@ -188,8 +226,8 @@ class acf_field_validated_field extends acf_field{
 
 		// key is needed in the field names to correctly save the data
 		$key = $field['name'];
-
-		$sub_field = isset($field['sub_field']) ? $field['sub_field'] : array();
+		$sub_field = isset($field['sub_field']) ? $field['sub_field'] : setup_sub_field($field);
+		$sub_field['name'] = $key . '][sub_field';
 
 		// get all of the registered fields for the sub type drop down
 		$fields_names = apply_filters('acf/registered_fields', array());
@@ -216,6 +254,7 @@ class acf_field_validated_field extends acf_field{
 											</label></td>
 											<td><?php
 
+											// Create the drop down of field types
 											do_action('acf/create_field', array(
 												'type'	=>	'select',
 												'name'	=>	'fields[' . $key . '][sub_field][type]',
@@ -224,18 +263,13 @@ class acf_field_validated_field extends acf_field{
 												'choices' => $fields_names
 											));
 
+											// Create the default sub field settings
+											do_action('acf/create_field_options', $sub_field );
 											?>
 											</td>
 										</tr>
-										<?php 
-										if (isset($sub_field['type']) && isset($this->parent->fields[$sub_field['type']])){
-											$this->parent->fields[$sub_field['type']]->create_options($key.'][sub_field', $sub_field);
-										}
-	
-										?>
 										<tr class="field_save">
 											<td class="label">
-												<!-- <label><?php _e("Save Field",'acf'); ?></label> -->
 											</td>
 											<td></td>
 										</tr>
@@ -278,7 +312,7 @@ class acf_field_validated_field extends acf_field{
 				do_action('acf/create_field', array(
 					'type'	=>	'select',
 					'name'	=>	'fields[' . $key . '][function]',
-					'value'	=>	$field['function'],
+					'value'	=>	isset($field['function'])? $field['function'] : "",
 					'choices' => array($choices),
 					'optgroup' => true,
 					'multiple'	=>	'0',
@@ -287,7 +321,7 @@ class acf_field_validated_field extends acf_field{
 				?>
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation">
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation" id="field_option_<?php echo $key; ?>_validation">
 			<td class="label"><label><?php _e("Validation Pattern",'acf'); ?> </label>
 			</td>
 			<td>
@@ -321,7 +355,7 @@ class acf_field_validated_field extends acf_field{
 
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation">
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_message" id="field_option_<?php echo $key; ?>_message">
 			<td class="label"><label><?php _e("Error Message",'acf'); ?> </label>
 			</td>
 			<td><?php 
@@ -338,6 +372,7 @@ class acf_field_validated_field extends acf_field{
 			<td class="label"><label><?php _e("Unique Value?",'acf'); ?> </label>
 			</td>
 			<td>
+			<div id="validated-<?php echo $key; ?>-unique">
 			<p><?php _e("Make sure this value is unique for...", 'acf_vf'); ?><br/>
 			<?php 
 			$choices = array(
@@ -358,19 +393,23 @@ class acf_field_validated_field extends acf_field{
 			));
 			?>
 			</p>
-			<div class="unique_all">
-			<p><?php _e("Include all posts, not just published posts?", 'acf_vf'); ?><br/>
+			<div class="unique_statuses">
+			<p><?php _e("Apply to which post statuses?", 'acf_vf'); ?><br/>
 			<?php
+			$statuses = $this->get_post_statuses();
+			$choices = array();
+			foreach ($statuses as $value => $status) {
+				$choices[$value] = $status->label;
+			}
+
 			do_action('acf/create_field', array(
-				'type'	=>	'select',
-				'name'	=>	'fields['.$key.'][unique_all]',
-				'value'	=>	isset($field['unique_all'])? $field['unique_all'] : 'false',
-				'choices' => array("false"=>"No", "true"=>"Yes"),
-				'optgroup' => false,
-				'multiple'	=>	'0',
-				'class' => 'validated-select',
+				'type'	=>	'checkbox',
+				'name'	=>	'fields['.$key.'][unique_statuses]',
+				'value'	=>	isset($field['unique_statuses'])? $field['unique_statuses'] : $this->unique_statuses,
+				'choices' => $choices,
 			)); 
 			?></p>
+			</div>
 			</div>
 			<script type="text/javascript">
 			jQuery(document).ready(function(){
@@ -393,44 +432,48 @@ class acf_field_validated_field extends acf_field{
 			    jQuery("#acf-field-<?php echo $key; ?>_editor").data('editor', editor);
 
 				jQuery('#acf-field-<?php echo $key; ?>_function').on('change',function(){
-					jQuery('#validated-<?php echo $key; ?>-info div').hide();
-					jQuery('#validated-<?php echo $key; ?>-info div.'+jQuery(this).val()).show();
+					jQuery('#validated-<?php echo $key; ?>-info div').hide(300);
+					jQuery('#validated-<?php echo $key; ?>-info div.'+jQuery(this).val()).show(300);
 					if (jQuery(this).val()!='none'){
-						jQuery('.field_option_<?php echo $this->name; ?>_validation').show();
+						jQuery('#validated-<?php echo $key; ?>-info .field_option_<?php echo $this->name; ?>_validation').show();
 					} else {
-						jQuery('.field_option_<?php echo $this->name; ?>_validation').hide();
+						jQuery('#validated-<?php echo $key; ?>-info .field_option_<?php echo $this->name; ?>_validation').hide();
 					}
 					var sPhp = '<'+'?'+'php';
 					var editor = jQuery('#acf-field-<?php echo $key; ?>_editor').data('editor');
 			    	var val = editor.getValue();
-					if (jQuery(this).val()=='php'){
-						if (val.indexOf(sPhp)!=0){
-							editor.setValue(sPhp +'\n' + val);
-						}
-		    			editor.getSession().setMode("ace/mode/php");
-		    			jQuery("#acf-field-<?php echo $key; ?>_editor").css('height','200px');
+					if (jQuery(this).val()=='none'){
+						jQuery('#field_option_<?php echo $key; ?>_validation, #field_option_<?php echo $key; ?>_message').hide(300);
 					} else {
-						if (val.indexOf(sPhp)==0){
-							editor.setValue(val.substr(val.indexOf('\n')+1));
+						if (jQuery(this).val()=='php'){
+							if (val.indexOf(sPhp)!=0){
+								editor.setValue(sPhp +'\n' + val);
+							}
+			    			editor.getSession().setMode("ace/mode/php");
+			    			jQuery("#acf-field-<?php echo $key; ?>_editor").css('height','200px');
+						} else {
+							if (val.indexOf(sPhp)==0){
+								editor.setValue(val.substr(val.indexOf('\n')+1));
+							}
+			    			editor.getSession().setMode("ace/mode/text");
+			    			jQuery("#acf-field-<?php echo $key; ?>_editor").css('height','18px');
 						}
-		    			editor.getSession().setMode("ace/mode/text");
-		    			jQuery("#acf-field-<?php echo $key; ?>_editor").css('height','18px');
+			    		editor.resize()
+			    		editor.gotoLine(1, 1, false);
+						jQuery('#field_option_<?php echo $key; ?>_validation, #field_option_<?php echo $key; ?>_message').show(300);
 					}
-		    		editor.resize()
-		    		editor.gotoLine(1, 1, false);
 				});
 
 				jQuery('#acf-field-<?php echo $key; ?>_unique').on('change',function(){
-					var unqa = jQuery('.unique_all');
+					var unqa = jQuery('#validated-<?php echo $key; ?>-unique .unique_statuses');
 					var val = jQuery(this).val();
-					if (val=='non-unique'||val=='') { unqa.hide(); } else { unqa.show(); }
+					if (val=='non-unique'||val=='') { unqa.hide(300); } else { unqa.show(300); }
 				});
-			});
 
-			// update ui
-			jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
-			jQuery('#acf-field-<?php echo $key; ?>_unique').trigger('change');
-			jQuery('#acf-field-<?php echo $key; ?>_sub_field_type').trigger('change');
+				// update ui
+				jQuery('#acf-field-<?php echo $key; ?>_function').trigger('change');
+				jQuery('#acf-field-<?php echo $key; ?>_unique').trigger('change');
+			});
 			</script>
 			</td>
 		</tr>
@@ -458,21 +501,8 @@ class acf_field_validated_field extends acf_field{
 		?>
 		<div class="validated-field">
 			<div class='validation-errors'></div>
-			<table class="widefat">
-				<thead>
-					<tr>
-						<th class="<?php echo $field['name']; ?>" style="width: 95%;"><span><?php echo $field['label']; ?></span></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr class="row">
-						<td><?php
-						do_action('acf/create_field', $sub_field);
-						?>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+			<?php
+			do_action('acf/create_field', $sub_field); ?>
 		</div>
 		<?php
 		if(!empty($field['mask'])) { ?>
