@@ -226,7 +226,7 @@ class acf_field_validated_field extends acf_field{
 
 		// key is needed in the field names to correctly save the data
 		$key = $field['name'];
-		$sub_field = isset($field['sub_field']) ? $field['sub_field'] : setup_sub_field($field);
+		$sub_field = isset($field['sub_field']) ? $field['sub_field'] : $this->setup_sub_field($field);
 		$sub_field['name'] = $key . '][sub_field';
 
 		// get all of the registered fields for the sub type drop down
