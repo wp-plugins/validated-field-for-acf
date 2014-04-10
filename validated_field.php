@@ -4,7 +4,7 @@ Plugin Name: Advanced Custom Fields: Validated Field
 Plugin URI: http://www.doublesharp.com/
 Description: Server side validation and input masking for the Advanced Custom Fields v4+ plugin
 Author: Justin Silver
-Version: 1.0.6
+Version: 1.0.7
 Author URI: http://doublesharp.com/
 */
 
