@@ -6,7 +6,7 @@ var vf = {
 
 (function($){
 	
-	$('form#post').live("submit", function(){
+	$(document).on("submit", "form#post", function(){
 		if (!vf.valid){
 			do_validation();
 			return false;
@@ -17,9 +17,8 @@ var vf = {
 
 	function do_validation(){
 		fields = [];
-		$('.validated-field .validation-errors').empty().hide();;
+		$('.validated-field .validation-errors').empty().hide();
 		$('.validated-field').removeClass('error');
-
 		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
 			
@@ -61,7 +60,7 @@ var vf = {
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
 						field = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]').closest('.field');
-						field.addClass('error').find('.validation-errors').append('<div>'+msg+'</div>').show();
+						field.addClass('error').find('.validation-errors').append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>').show();
 						field.find('.widefat').css('width','100%');
 					}
 				}
@@ -79,5 +78,4 @@ var vf = {
 			$('.acf_postbox:hidden').remove();
 		}
 	}
-	
 })(jQuery);
