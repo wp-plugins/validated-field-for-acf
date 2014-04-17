@@ -2,12 +2,12 @@
 if (class_exists("acf_Field") && !class_exists("acf_field_validated_field")):
 class acf_field_validated_field extends acf_field{
 	// vars
-	var $settings, // will hold info such as dir / path
-		$defaults, // will hold default field options
-		$unique_statuses = array(
+	var $settings, 					// will hold info such as dir / path
+		$defaults, 					// will hold default field options
+		$unique_statuses = array(	// default posts statuses for unique query
 			'publish',
 			'future'
-		); // default posts statuses for unique query
+		); 				
 
 	/*
 	*  __construct
@@ -49,7 +49,10 @@ class acf_field_validated_field extends acf_field{
 		$sub_field = $field['sub_field'];
 		$sub_field['key'] = isset( $field['key'] )? $field['key'] : '';
 		$sub_field['name'] = isset( $field['name'] )? $field['name'] : '';
+		$sub_field['_name'] = isset( $field['_name'] )? $field['_name'] : '';
+		$sub_field['id'] = isset( $field['id'] )? $field['id'] : '';
 		$sub_field['value'] = isset( $field['value'] )? $field['value'] : '';
+		$sub_field['field_group'] = isset( $field['field_group'] )? $field['field_group'] : '';
 		return $sub_field;
 	}
 
@@ -63,7 +66,6 @@ class acf_field_validated_field extends acf_field{
 	*/
     function get_post_statuses() {
         global $wp_post_statuses;
-
         return $wp_post_statuses;
     }
 
@@ -95,6 +97,7 @@ class acf_field_validated_field extends acf_field{
 	*/
 	function ajax_validate_fields() {
 		global $wpdb;
+
 		$post_id = isset( $_REQUEST['post_id'] )? $_REQUEST['post_id'] : 0 ;
 		$post_type = get_post_type( $post_id );
 		$fields = isset( $_REQUEST['fields'] )? $_REQUEST['fields'] : array();
@@ -237,6 +240,23 @@ class acf_field_validated_field extends acf_field{
 		unset( $fields_names[ "Basic" ][ "validated_field" ] );
 
 		?>
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_readonly" id="field_option_<?php echo $key; ?>_readonly">
+			<td class="label"><label><?php _e("Read Only?",'acf_vf'); ?> </label>
+			</td>
+			<td><?php 
+			do_action('acf/create_field', array(
+				'type'	=>	'radio',
+				'name'	=>	'fields['.$key.'][read_only]',
+				'value'	=>	isset($field['read_only'])? $field['read_only'] : 'false',
+				'choices' => array(
+					"true"=>"Yes",
+					"false"=>"No",
+				),
+				'class' => 'horizontal'
+			));
+			?>
+			</td>
+		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?>">
 			<td class="label"><label><?php _e("Validated Field",'acf'); ?> </label>
 			<script type="text/javascript">
@@ -253,7 +273,6 @@ class acf_field_validated_field extends acf_field{
 											<td class="label"><label><span class="required">*</span> <?php _e("Field Type",'acf'); ?>
 											</label></td>
 											<td><?php
-
 											// Create the drop down of field types
 											do_action('acf/create_field', array(
 												'type'	=>	'select',
@@ -282,38 +301,34 @@ class acf_field_validated_field extends acf_field{
 				</div>
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?>">
+		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
 			<td class="label"><label><?php _e("Input Mask",'acf'); ?> </label>
 			</td>
 			<td><?php _e("Use 'a' to match A-Za-z, '9' to match 0-9, and '*' to match any alphanumeric. <a href='http://digitalbush.com/projects/masked-input-plugin/' target='_new'>More info.</a>",'acf'); ?><br />
 				<?php 
-
 				do_action('acf/create_field', array(
 					'type'	=>	'text',
 					'name'	=>	'fields[' . $key . '][mask]',
 					'value'	=>	isset($field['mask'])? $field['mask'] : ""
 				));
-
 				?>
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?>">
+		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
 			<td class="label"><label><?php _e("Validation Function",'acf'); ?> </label>
 			</td>
 			<td><?php _e("How should the field be server side validated?",'acf'); ?><br />
 				<?php 
-				$choices = array (
-						"none"=>"None",
-						"regex"=>"Regular Expression",
-						//"sql"=>"SQL Query",
-						"php"=>"PHP Statement",
-				);
-
 				do_action('acf/create_field', array(
 					'type'	=>	'select',
 					'name'	=>	'fields[' . $key . '][function]',
 					'value'	=>	isset($field['function'])? $field['function'] : "",
-					'choices' => array($choices),
+					'choices' => array(
+						"none"=>"None",
+						"regex"=>"Regular Expression",
+						//"sql"=>"SQL Query",
+						"php"=>"PHP Statement",
+					),
 					'optgroup' => true,
 					'multiple'	=>	'0',
 					'class' => 'validated_select',
@@ -321,7 +336,7 @@ class acf_field_validated_field extends acf_field{
 				?>
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation" id="field_option_<?php echo $key; ?>_validation">
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation non_read_only" id="field_option_<?php echo $key; ?>_validation">
 			<td class="label"><label><?php _e("Validation Pattern",'acf'); ?> </label>
 			</td>
 			<td>
@@ -343,7 +358,6 @@ class acf_field_validated_field extends acf_field{
 					</div>
 				</div> 
 				<?php
-
 				do_action('acf/create_field', array(
 					'type'	=>	'textarea',
 					'name'	=>	'fields['.$key.'][pattern]',
@@ -355,11 +369,10 @@ class acf_field_validated_field extends acf_field{
 
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_message" id="field_option_<?php echo $key; ?>_message">
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_message non_read_only" id="field_option_<?php echo $key; ?>_message">
 			<td class="label"><label><?php _e("Error Message",'acf'); ?> </label>
 			</td>
 			<td><?php 
-
 			do_action('acf/create_field', array(
 				'type'	=>	'text',
 				'name'	=>	'fields['.$key.'][message]',
@@ -368,25 +381,24 @@ class acf_field_validated_field extends acf_field{
 			?>
 			</td>
 		</tr>
-		<tr class="field_option field_option_<?php echo $this->name; ?>">
+		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
 			<td class="label"><label><?php _e("Unique Value?",'acf'); ?> </label>
 			</td>
 			<td>
 			<div id="validated-<?php echo $key; ?>-unique">
 			<p><?php _e("Make sure this value is unique for...", 'acf_vf'); ?><br/>
 			<?php 
-			$choices = array(
-					"non-unique"=>"Non-Unique Value",
-					"global"=>"Unique Globally",
-					"post_type"=>"Unique For Post Type",
-					"post_key"=>"Unique For Post Type -> Key",
-			);
 
 			do_action('acf/create_field', array(
 				'type'	=>	'select',
 				'name'	=>	'fields[' . $key . '][unique]',
 				'value'	=>	isset($field['unique'])? $field['unique'] : "",
-				'choices' => array($choices),
+				'choices' => array(
+					"non-unique"=>"Non-Unique Value",
+					"global"	=>"Unique Globally",
+					"post_type"	=>"Unique For Post Type",
+					"post_key"	=>"Unique For Post Type -> Key",
+				),
 				'optgroup' => false,
 				'multiple'	=>	'0',
 				'class' => 'validated-select',
@@ -492,20 +504,37 @@ class acf_field_validated_field extends acf_field{
 	*  @date	23/01/13
 	*/
 	function create_field( $field ){
+		global $post;
+    	global $pagenow;
+    	$is_new = $pagenow=='post-new.php';
+
 		// defaults?
 		$field = array_merge($this->defaults, $field);
 
 		// create Field HTML
 		$sub_field = $this->setup_sub_field($field);
-		$sub_value = isset($sub_field['default_value']) ? $sub_field['default_value'] : '';
 		?>
 		<div class="validated-field">
 			<div class='validation-errors'></div>
 			<?php
-			do_action('acf/create_field', $sub_field); ?>
+			if ( $field['read_only'] == 'true' ){
+				?>
+				<p><?php 
+				ob_start();
+				do_action('acf/create_field', $sub_field); 
+				$contents = ob_get_contents();
+				$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true readonly", $contents);
+				ob_end_clean();
+				echo $contents;
+				?></p>
+				<?php
+			} else {
+				do_action('acf/create_field', $sub_field); 
+			}
+			?>
 		</div>
 		<?php
-		if(!empty($field['mask'])) { ?>
+		if( !$is_new && !$sub_field['read_only'] && !empty($field['mask']) ) { ?>
 			<script type="text/javascript">
 				jQuery(function($){
 				   $('[name="<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>"]').mask('<?php echo $field['mask']?>');
@@ -533,9 +562,6 @@ class acf_field_validated_field extends acf_field{
 		wp_register_script( 'sh-core', $this->settings['dir'] . 'js/shCore.js', array('acf-input'), $this->settings['version'] );
 		wp_register_script( 'sh-autoloader', $this->settings['dir'] . 'js/shAutoloader.js', array('sh-core'), $this->settings['version']);
 		
-		// register CSS styles
-		wp_register_style( 'acf-validated_field', $this->settings['dir'] . 'css/input.css', array('acf-input'), $this->settings['version'] ); 
-
 		// enqueue scripts
 		wp_enqueue_script(array(
 			'jquery',
@@ -543,11 +569,6 @@ class acf_field_validated_field extends acf_field{
 			'jquery-ui-tabs',
 			'jquery-masking',
 			'acf-validated_field'
-		));
-
-		// enqueue CSS styles
-		wp_enqueue_style(array(
-			'acf-validated_field',	
 		));
 	}
 
@@ -562,7 +583,11 @@ class acf_field_validated_field extends acf_field{
 	*  @since	3.6
 	*  @date	23/01/13
 	*/
-	function input_admin_head(){ }
+	function input_admin_head(){
+		wp_enqueue_style( 'font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css', array(), $this->settings['version'] );
+		wp_enqueue_style( 'acf-validated_field', $this->settings['dir'] . 'css/input.css', array('acf-input'), $this->settings['version'] ); 
+
+	}
 
 	/*
 	*  field_group_admin_enqueue_scripts()
@@ -609,7 +634,11 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$value - the value to be saved in te database
 	*/
 	function load_value( $value, $post_id, $field ){
-		// Note: This function can be removed if not used
+		// defaults?
+		$field = array_merge($this->defaults, $field);
+		// sub field
+		$sub_field = $this->setup_sub_field($field);
+		$value = apply_filters('acf/load_value/type='.$sub_field['type'], $value, $post_id, $sub_field);
 		return $value;
 	}
 
@@ -631,10 +660,9 @@ class acf_field_validated_field extends acf_field{
 	function update_value( $value, $post_id, $field ){
 		// defaults?
 		$field = array_merge($this->defaults, $field);
-
+		// sub field
 		$sub_field = $this->setup_sub_field($field);
-		do_action('acf/update_value', $value, $post_id, $sub_field );
-
+		$value = apply_filters('acf/update_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 		return $value;
 	}
 
@@ -656,8 +684,9 @@ class acf_field_validated_field extends acf_field{
 	function format_value( $value, $post_id, $field ){
 		// defaults?
 		$field = array_merge($this->defaults, $field);
-
-		// Note: This function can be removed if not used
+		// sub field
+		$sub_field = $this->setup_sub_field($field);
+		$value = apply_filters('acf/format_value/type='.$sub_field['type'], $value, $post_id, $sub_field);
 		return $value;
 	}
 
@@ -679,11 +708,9 @@ class acf_field_validated_field extends acf_field{
 	function format_value_for_api( $value, $post_id, $field ){
 		// defaults?
 		$field = array_merge($this->defaults, $field);
-
+		// sub field
 		$sub_field = $this->setup_sub_field($field);
-
-		$value = apply_filters('acf/format_value_for_api', $value, $post_id, $sub_field);
-
+		$value = apply_filters('acf/format_value_for_api/type='.$sub_field['type'], $value, $post_id, $sub_field);
 		return $value;
 	}
 
@@ -701,7 +728,19 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$field - the field array holding all the field options
 	*/
 	function load_field( $field ){
-		// Note: This function can be removed if not used
+		global $currentpage;
+		// defaults?
+		$field = array_merge($this->defaults, $field);
+		// sub field
+		$sub_field = $this->setup_sub_field($field);
+		$sub_field = apply_filters('acf/load_field/type='.$sub_field['type'], $sub_field);
+		$field['sub_field'] = $sub_field;
+
+		if ( $field['read_only'] && $currentpage == 'edit.php' ){
+			$field['label'] = $field['label'].' <i class="fa fa-link" title="Read only"></i>';
+		}
+
+
 		return $field;
 	}
 
@@ -720,7 +759,12 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$field - the modified field
 	*/
 	function update_field( $field, $post_id ){
-		// Note: This function can be removed if not used
+		// defaults?
+		$field = array_merge($this->defaults, $field);
+		// sub field
+		$sub_field = $this->setup_sub_field($field);
+		$sub_field = apply_filters('acf/update_field/type='.$sub_field['type'], $sub_field, $post_id ); // new filter
+		$field['sub_field'] = $sub_field;
 		return $field;
 	}
 }
