@@ -1,5 +1,3 @@
-
-
 var vf = {
 	valid : false
 };
@@ -7,15 +5,17 @@ var vf = {
 (function($){
 	
 	$(document).on("submit", "form#post", function(){
+		var clickId = jQuery(event.srcElement).attr('id');
+		if (clickId=='post-preview') return true;
 		if (!vf.valid){
-			do_validation();
-			return false;
+			return do_validation(clickId);
 		} else {
 			vf.valid = false;
 		}
 	});
 
-	function do_validation(){
+	function do_validation(clickId){
+		if (!clickId) return;
 		fields = [];
 		$('.validated-field .validation-errors').empty().hide();
 		$('.validated-field').removeClass('error');
@@ -33,24 +33,34 @@ var vf = {
 			});
 		});
 
-		$.ajax({
-			url: ajaxurl,
-			data: {
-				action: 'validate_fields',
-				post_id: $("#post_ID").val(),
-				fields: fields
-			},
-			type: 'post',
-			dataType: 'json',
-			success: function(json){
-				ajax_returned(json);				
-			}, 
-			error: function(jqXHR, exception){
-				ajax_returned(fields);
-			}
-		});
+		$('.acf_postbox:hidden').remove();
+
+		// if there are no fields, don't make an ajax call.
+		if ( !fields.length ){
+			vf.valid = true;
+			$('#publish').click();
+			return true;
+		} else {
+			$.ajax({
+				url: ajaxurl,
+				data: {
+					action: 'validate_fields',
+					post_id: $("#post_ID").val(),
+					fields: fields
+				},
+				type: 'post',
+				dataType: 'json',
+				success: function(json){
+					ajax_returned(json, clickId);				
+				}, 
+				error: function(jqXHR, exception){
+					ajax_returned(fields, clickId);
+				}
+			});
+			return false;
+		}
 		
-		function ajax_returned(fields){
+		function ajax_returned(fields, clickId){
 			vf.valid = false;
 			valid = true;
 			if (fields){
@@ -74,8 +84,6 @@ var vf = {
 				$('#ajax-loading').attr('style','');
 				$('#publishing-action .spinner').hide();
 			}
-			
-			$('.acf_postbox:hidden').remove();
 		}
 	}
 })(jQuery);
