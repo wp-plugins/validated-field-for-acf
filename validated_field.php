@@ -12,6 +12,10 @@ Author URI: http://doublesharp.com/
 // Load the add-on field once the plugins have loaded, but before init (this is when ACF registers the fields)
 if (!function_exists("register_acf_validated_field")):
 function register_acf_validated_field(){
+
+	if ( !defined('ACF_VF_PLUGIN_FILE') )
+		define('ACF_VF_PLUGIN_FILE', __FILE__);
+
 	// create field
 	include_once 'validated_field_v4.php';
 }

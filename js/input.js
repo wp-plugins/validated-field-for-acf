@@ -1,24 +1,25 @@
 var vf = {
-	valid : false
+	valid : false,
+	lastclick : false
 };
 
 (function($){
+
+	$(document).on("click", "form#post input", function(){
+		vf.lastclick = $(event.srcElement);
+	});
 	
 	$(document).on("submit", "form#post", function(){
-		var clickId = jQuery(event.srcElement).attr('id');
-		if (clickId=='post-preview') return true;
 		if (!vf.valid){
-			return do_validation(clickId);
-		} else {
-			vf.valid = false;
-		}
+			return do_validation(vf.lastclick);
+		} 
+		return true;
 	});
 
-	function do_validation(clickId){
-		if (!clickId) return;
+	function do_validation(clickObj){
+		if (!clickObj) return;
 		fields = [];
-		$('.validated-field .validation-errors').empty().hide();
-		$('.validated-field').removeClass('error');
+		$('.field_type-validated_field').find('.acf-error-message').remove();
 		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
 			
@@ -51,10 +52,10 @@ var vf = {
 				type: 'post',
 				dataType: 'json',
 				success: function(json){
-					ajax_returned(json, clickId);				
+					ajax_returned(json, clickObj);				
 				}, 
 				error: function(jqXHR, exception){
-					ajax_returned(fields, clickId);
+					ajax_returned(fields, clickObj);
 				}
 			});
 			return false;
@@ -70,19 +71,21 @@ var vf = {
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
 						field = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]').closest('.field');
-						field.addClass('error').find('.validation-errors').append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>').show();
+						label = field.parent().find('p.label:first');
+						label.append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
 						field.find('.widefat').css('width','100%');
 					}
 				}
 				vf.valid = valid;
 			}
 			
+			clickObj.removeClass('button-primary-disabled').removeClass('disabled');
+			$('#ajax-loading').attr('style','');
+			$('#publishing-action .spinner').hide();
 			if(vf.valid) {
-				$('#publish').click();
+				clickObj.click();
 			} else {
-				$('#publish').removeClass('button-primary-disabled');
-				$('#ajax-loading').attr('style','');
-				$('#publishing-action .spinner').hide();
+				$('.field_type-validated_field .acf-error-message').show();
 			}
 		}
 	}

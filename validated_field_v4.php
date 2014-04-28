@@ -203,7 +203,13 @@ class acf_field_validated_field extends acf_field{
 			if(empty($fld['message'])) $fld['message'] = 'Validation failed.';
 			$fld['id'] = $field['id'];
 			$fld['valid'] = $vld;
-			$flds[]=$fld;
+
+			$rfld = array(
+				'id' => $fld['id'],
+				'message' => $fld['valid'] ? null : $fld['message'],
+				'valid' => $fld['valid'],
+			);
+			$flds[]=$rfld;
 		}
 		
 		// Send the results back to the browser as JSON
@@ -517,7 +523,7 @@ class acf_field_validated_field extends acf_field{
 		<div class="validated-field">
 			<div class='validation-errors'></div>
 			<?php
-			if ( $field['read_only'] == 'true' ){
+			if ( $field['read_only'] === 'true' ){
 				?>
 				<p><?php 
 				ob_start();
@@ -534,7 +540,7 @@ class acf_field_validated_field extends acf_field{
 			?>
 		</div>
 		<?php
-		if( !$is_new && !$sub_field['read_only'] && !empty($field['mask']) ) { ?>
+		if( !$is_new && isset($sub_field['read_only']) && !$sub_field['read_only'] && !empty($field['mask']) ) { ?>
 			<script type="text/javascript">
 				jQuery(function($){
 				   $('[name="<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>"]').mask('<?php echo $field['mask']?>');
