@@ -2,8 +2,8 @@
 Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input
 Requires at least: 3.0.1
-Tested up to: 3.8.1
-Stable tag: 1.0.7
+Tested up to: 3.9
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,14 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+
+= 1.1 = 
+* Add Read-only functionality (beta)
+* Use standard ACF error/messaging
+* Correctly process "preview" clicks, fixes error where the post would be published
+* Register CSS only in required locations
+* Properly apply subfield filters for 'acf/load_value/type=', 'acf/update_value/type=', 'acf/format_value/type=' , 'acf/format_value_for_api/type=', 'acf/load_field/type=', 'acf/update_field/type='
+* Testing up to WordPress 3.9
 
 = 1.0.7 =
 * Critical bug fix for selecting Validated Field type.
