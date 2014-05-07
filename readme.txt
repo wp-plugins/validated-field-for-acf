@@ -1,63 +1,56 @@
-=== Plugin Name ===
+=== Advanced Custom Field for ACF ===
 Contributors: doublesharp
-Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input
-Requires at least: 3.0.1
+Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
+Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 1.1
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Add-on field for Advanced Custom Fields 4+ that provides input masking and validation of other field types.
+The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
 
 == Description ==
-
-The Validated Field add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *version 4+* provides a wrapper for other 
-input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either
-PHP regular expressions or PHP code, as well as the option of ensuring a field's uniqueness by post type &amp; key, post type, or side wide.
+The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field\'s uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only .
 
 == Installation ==
-
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
+2. Activate the plugin through the \'Plugins\' menu in WordPress
 3. Configure validated fields within the Advanced Custom Fields menus
 
-Please note that this plugin requires [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) and only works with version 4 or greater.
-
 == Frequently Asked Questions ==
-
-= I've activated the Validated Fields plugin, but nothing happens =
-
+= I\'ve activated the Validated Fields plugin, but nothing happens =
 Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed, and that it is activated. Validated Field should appear as a new input type.
 
-
 == Screenshots ==
-
-1. Example configuration for a validate telephone number field. 
-
+1. Example configuration to validate a telephone number field.
 2. Example of a conflict - the same telephone number already exists, with a link to the existing record.
-
 3. Example of PHP validation - checking the length of a field’s value.
-
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.1.1 =
+* Clean up PHP to WordPress standards
+* Fix PHP Notice breaking AJAX call
+* Use defaults to prevent invalid array indexes
+* Update JavaScript for UI Errors
+* More localization prep for text
 
 = 1.1 = 
 * Add Read-only functionality (beta)
 * Use standard ACF error/messaging
-* Correctly process "preview" clicks, fixes error where the post would be published
+* Correctly process \"preview\" clicks, fixes error where the post would be published
 * Register CSS only in required locations
-* Properly apply subfield filters for 'acf/load_value/type=', 'acf/update_value/type=', 'acf/format_value/type=' , 'acf/format_value_for_api/type=', 'acf/load_field/type=', 'acf/update_field/type='
+* Properly apply subfield filters for \'acf/load_value/type=\', \'acf/update_value/type=\', \'acf/format_value/type=\' , \'acf/format_value_for_api/type=\', \'acf/load_field/type=\', \'acf/update_field/type=\'
 * Testing up to WordPress 3.9
 
 = 1.0.7 =
 * Critical bug fix for selecting Validated Field type.
 
 = 1.0.6 =
-* Bug fix $sub_field properties not saving (use "acf/create_field_options" action).
+* Bug fix $sub_field properties not saving (use \"acf/create_field_options\" action).
 * Bug fix multiple Validated Fields in a set - correct to always use unique selectors.
 * Allow for unique query to be run on selected post statuses.
-* Set default statuses included in unique queries with filter of "acf_vf/unique_statuses".
+* Set default statuses included in unique queries with filter of \"acf_vf/unique_statuses\".
 * Remove redundant table wrapper on validated fields.
 * Clean up potential strict PHP warnings.
 
