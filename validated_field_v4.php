@@ -1,9 +1,10 @@
 <?php
-if (class_exists("acf_Field") && !class_exists("acf_field_validated_field")):
-class acf_field_validated_field extends acf_field{
+if ( class_exists( 'acf_Field' ) && ! class_exists( 'acf_field_validated_field' ) ):
+class acf_field_validated_field extends acf_field {
 	// vars
 	var $settings, 					// will hold info such as dir / path
 		$defaults, 					// will hold default field options
+		$sub_defaults, 				// will hold default sub field options
 		$unique_statuses = array(	// default posts statuses for unique query
 			'publish',
 			'future'
@@ -19,41 +20,57 @@ class acf_field_validated_field extends acf_field{
 	*/
 	function __construct(){
 		// vars
-		$this->name = 'validated_field';
-		$this->label = __('Validated Field');
-		$this->category = __("Basic",'acf'); // Basic, Content, Choice, etc
-		$this->defaults = array(
-			// add default here to merge into your field. 
-			'function' => 'none',
-			'pattern' => '',
-		);
+		$this->name 		= 'validated_field';
+		$this->label 		= __( 'Validated Field', 'acf_vf' );
+		$this->category 	= __( 'Basic', 'acf');
 
 		// the default checked statuses for unique queries
 		$this->unique_statuses = apply_filters( 'acf_vf/unique_statuses', $this->unique_statuses );
+
+		$this->defaults = array(
+			'read_only' => 'false',
+			'function' 	=> 'none',
+			'read_only' => 'false',
+			'pattern' 	=> '',
+			'mask' 		=> '',
+			'unique' 	=> '',
+			'unique_statuses' => $this->unique_statuses,
+		);
+
+		$this->sub_defaults = array(
+			'type' 		=> '',
+			'key' 		=> '',
+			'name' 		=> '',
+			'_name' 	=> '',
+			'id' 		=> '',
+			'value' 	=> '',
+			'field_group' => '',
+		);
 
 		// do not delete!
     	parent::__construct();
     	
     	// settings
-		$this->settings = array(
-			'path' => apply_filters('acf/helpers/get_path', __FILE__),
-			'dir' => apply_filters('acf/helpers/get_dir', __FILE__),
+		$this->settings 	= array(
+			'path' => apply_filters( 'acf/helpers/get_path', __FILE__ ),
+			'dir' => apply_filters( 'acf/helpers/get_dir', __FILE__ ),
 			'version' => '1.0.0'
 		);
 
-		add_action( 'wp_ajax_validate_fields', array(&$this, 'ajax_validate_fields') );
-		add_action( 'admin_head', array(&$this, 'input_admin_head') );
+		add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
+		add_action( 'admin_head', array( &$this, 'input_admin_head' ) );
 	}
 
-	function setup_sub_field($field){
-		$sub_field = $field['sub_field'];
-		$sub_field['key'] = isset( $field['key'] )? $field['key'] : '';
-		$sub_field['name'] = isset( $field['name'] )? $field['name'] : '';
-		$sub_field['_name'] = isset( $field['_name'] )? $field['_name'] : '';
-		$sub_field['id'] = isset( $field['id'] )? $field['id'] : '';
-		$sub_field['value'] = isset( $field['value'] )? $field['value'] : '';
-		$sub_field['field_group'] = isset( $field['field_group'] )? $field['field_group'] : '';
-		return $sub_field;
+	function setup_sub_field( $field ){
+		$sub_field = isset( $field['sub_field'] )? 
+			$field['sub_field'] : 	// already set up
+			array();				// create it
+		// mask the sub field as the parent by giving it the same key values
+		foreach( array( 'key', 'name', '_name', 'id', 'value', 'field_group' ) as $key ){
+			$sub_field[$key] = isset( $field[$key] )? $field[$key] : '';
+		}
+		// make sure all the defaults are set
+		return array_merge( $this->sub_defaults, $sub_field );
 	}
 
 	/*
@@ -78,12 +95,11 @@ class acf_field_validated_field extends acf_field{
 	*
 	*/
 	function valid_date($date){
-		if (preg_match('/^(\d{4})-(\d{2})-(\d{2}) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/', $date, $matches)) {
-			if (checkdate($matches[2], $matches[3], $matches[1])) {
+		if ( preg_match( '/^(\d{4})-(\d{2})-(\d{2}) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/', $date, $matches ) ){
+			if ( checkdate( $matches[2], $matches[3], $matches[1] ) ){
 				return true;
 			}
 		}
-	
 		return false;
 	}
 
@@ -96,124 +112,127 @@ class acf_field_validated_field extends acf_field{
 	*
 	*/
 	function ajax_validate_fields() {
-		global $wpdb;
 
-		$post_id = isset( $_REQUEST['post_id'] )? $_REQUEST['post_id'] : 0 ;
+		$post_id = isset( $_REQUEST['post_id'] )? 
+			$_REQUEST['post_id'] : 
+			0;
+		$fields = ( isset( $_REQUEST['fields'] ) && is_array( $_REQUEST['fields'] ) )? 
+			$_REQUEST['fields'] : 
+			array();
+
 		$post_type = get_post_type( $post_id );
-		$fields = isset( $_REQUEST['fields'] )? $_REQUEST['fields'] : array();
-		if (!is_array($fields)) $fields = array();
-		$flds = array();
 
-		header('HTTP/1.1 200 OK'); 				// be positive
-		foreach ($fields as $field){ 			// loop through each field
-			$val = $field['value']; 			// get the submitted value
-			if ( $val == null )	continue;		// we don't process empty values, the required checkbox handles that
-			$vld = true; 						// wait for a any test to fail
-			$key = substr($field['id'], 7, -1); // key the acf key from the field id/name
-			$fld = get_field_object($key, $post_id); // load the field config
-			$func = $fld['function']; 			// what type of validation?
-			$ptrn = $fld['pattern']; 			// string to use for validation
-			if (!empty($func) && !empty($ptrn)){
+		header( 'HTTP/1.1 200 OK' ); 			// be positive!
+		foreach ( $fields as $field ){ 			// loop through each field
+			if ( null == ( $val = $field['value'] ) ) // get the submitted value
+				continue; 						// we don't process empty values, the required checkbox handles that
+			$valid = true; 						// wait for a any test to fail
+			$key = substr( $field['id'], 7, -1 ); // key the acf key from the field id/name
+			$field = array_merge( $this->defaults, get_field_object( $key, $post_id ) ); // load the field config, set defaults
+			$function = $field['function']; 	// what type of validation?
+			$pattern = $field['pattern']; 		// string to use for validation
+			if ( ! empty( $function ) && ! empty( $pattern ) ){
 				// only run these checks if we have a pattern
-				switch ($func){
+				switch ( $function ){
 					case 'regex': 				// check for any matches to the regular expression
-						$ptrn_fltr = "/".str_replace("/", "\/", $ptrn)."/";
-						if (!preg_match($ptrn_fltr,$val)){
-							$vld = false; 		// return false if there are no matches
+						$pattern_fltr = "/".str_replace( "/", "\/", $pattern )."/";
+						if ( ! preg_match( $pattern_fltr, $val ) ){
+							$valid = false; 	// return false if there are no matches
 						}
 						break;
 					case 'sql': 				// todo: sql checks?
 						break;
 					case 'php': 				// this code is a little tricky, one bad eval() can break the lot. needs a nonce.
-						$message = $fld['message'];
-						$prev_value = get_post_meta($post_id, $fld['name'], true);
+						$message = $field['message'];
+						$prev_value = get_post_meta( $post_id, $field['name'], true );
 									
 						// it gets tricky but we are trying to account for an capture bad php code where possible
-						$ptrn = trim($ptrn);
-						//$ptrn = str_replace(array("\n","\r"), "", $ptrn);
-						if (substr($ptrn, -1)!=";") $ptrn.=";";
-						$php.= 'function validate_php_function($post_id, $post_type, $name, $value, $prev_value, &$message) { '."\n";
+						$pattern = trim( $pattern );
+						if ( substr( $pattern, -1 ) != ';' ) $pattern.= ';';
+						$php = 'function validate_php_function( $post_id, $post_type, $name, $value, $prev_value, &$message ) { '."\n";
 						$php.= '	try { '."\n";
-						$php.= '		$code = \'' . str_replace("'", "\'", $ptrn . ' return true;' ) . '\';'."\n";
-						$php.= '		return eval($code); '."\n";
-						$php.= '	} catch (Exception $e){ '."\n";
+						$php.= '		$code = \'' . str_replace("'", "\'", $pattern . ' return true;' ) . '\';'."\n";
+						$php.= '		return eval( $code ); '."\n";
+						$php.= '	} catch ( Exception $e ){ '."\n";
 						$php.= '		$message = "Error: ".$e->getMessage(); return false; '."\n";
 						$php.= '	} '."\n";
 						$php.= '} '."\n";
-						$php.= '$vld = validate_php_function('.$post_id.', "'.$post_type.'", "'.$fld['name'].'", "'.addslashes($val).'", "'.addslashes($prev_value).'", $message); '."\n";
+						$php.= '$valid = validate_php_function( '.$post_id.', "'.$post_type.'", "'.$field['name'].'", "'.addslashes($val).'", "'.addslashes($prev_value).'", $message );'."\n";
 						
 						// run the eval() in the eval()
-						if(eval($php)!==true){
+						if ( true !== eval( $php ) ){
 							$error = error_get_last();	
 							// check to see if this is our error or not.
-							if (strpos($error['file'], "validated_field_v4.php") && strpos($error['file'], "eval()'d code") ){
-								$vld = false;
+							if ( strpos( $error['file'], "validated_field_v4.php") && strpos( $error['file'], "eval()'d code" ) ){
+								$valid = false;
 								$message = $error['message'];
 							} 
 						}
-						$fld['message'] = $message;
+						$field['message'] = $message;
 						break;
 				}
-			} elseif (!empty($func)&&$func!="none") {
-				$vld = false;
-				$fld['message'] = __('This field\'s validation is not properly configured.', 'acf');
+			} elseif ( ! empty( $function ) && $function != 'none' ) {
+				$valid = false;
+				$field['message'] = __('This field\'s validation is not properly configured.', 'acf');
 			}
 				
-			$unq = $fld['unique'];
-			if ($vld && !empty($unq) && $unq!='non-unique'){
-				$status_in = "'".implode("','",(isset($fld['unique_statuses']))? $fld['unique_statuses'] : $this->unique_statuses)."'";
+			$unq = $field['unique'];
+			if ( $valid && ! empty( $unq ) && $unq != 'non-unique' ){
+				global $wpdb;
+				$status_in = "'".implode( "','", ( isset( $field['unique_statuses'] ) )? $field['unique_statuses'] : $this->unique_statuses)."'";
 				$sql_prefix = "select meta_id, post_id, p.post_title from {$wpdb->postmeta} pm join {$wpdb->posts} p on p.ID = pm.post_id and post_status in (".$status_in.")";
 				switch ($unq){
 					case 'global': 
 						// check to see if this value exists anywhere in the postmeta table
-						$sql = $wpdb->prepare("{$sql_prefix} where post_id != %d and meta_value = %s", $post_id, $val);
+						$sql = $wpdb->prepare( "{$sql_prefix} where post_id != %d and meta_value = %s", $post_id, $val);
 						break;
 					case 'post_type':
 						// check to see if this value exists in the postmeta table with this $post_id
-						$sql = $wpdb->prepare("{$sql_prefix} and p.post_type = %s where post_id != %d and meta_value = %s", $post_type, $post_id, $val);
+						$sql = $wpdb->prepare( "{$sql_prefix} and p.post_type = %s where post_id != %d and meta_value = %s", $post_type, $post_id, $val );
 						break;
 					case 'post_key':
 						// check to see if this value exists in the postmeta table with both this $post_id and $meta_key
-						$sql = $wpdb->prepare("{$sql_prefix} and p.post_type = %s where post_id != %d and meta_key = %s and meta_value = %s", $post_type, $post_id, $fld['name'], $val);
+						$sql = $wpdb->prepare( "{$sql_prefix} and p.post_type = %s where post_id != %d and meta_key = %s and meta_value = %s", $post_type, $post_id, $field['name'], $val );
 						break;
 					default:
 						// no dice, set $sql to null
 						$sql = null;
 						break;
 				}
+				error_log($sql);
 
 				// Only run if we hit a condition above
-				if (!empty($sql)){
+				if ( ! empty( $sql ) ){
 					// Execute the SQL
-					$rows = $wpdb->get_results($sql);
-					if (count($rows)>0){
+					$rows = $wpdb->get_results( $sql );
+					if ( count( $rows ) ){
 						// We got some matches, but there might be more than one so we need to concatenate the collisions
 						$conflicts = "";
-						foreach ($rows as $row){
-							$conflicts .= "<a href='/wp-admin/post.php?post={$row->post_id}&action=edit'>{$row->post_title}</a>";
-							if ($row!==end($rows)) $conflicts.= ', ';
+						foreach ( $rows as $row ){
+							$conflicts .= "<a href='/wp-admin/post.php?post={$row->post_id}&action=edit' style='color:inherit;'>{$row->post_title}</a>";
+							if ( $row !== end( $rows ) ) $conflicts.= ', ';
 						}
-						$fld['message'] = "This value '{$val}' is already in use by {$conflicts}.";
-						$vld = false;
+						$field['message'] = __( 'The value ', 'acf_vf' ) . $val . __( ' is already in use by ', 'acf_vf' ) . $conflicts . '.';
+						$valid = false;
 					}
 				}
 			}
 			
 			// Check to see if the validation was successful, if not return the error message
-			if(empty($fld['message'])) $fld['message'] = 'Validation failed.';
-			$fld['id'] = $field['id'];
-			$fld['valid'] = $vld;
+			if( empty( $field['message'] ) ) $field['message'] = 'Validation failed.';
+			$field['id'] = $field['id'];
+			$field['valid'] = $valid;
 
 			$rfld = array(
-				'id' => $fld['id'],
-				'message' => $fld['valid'] ? null : $fld['message'],
-				'valid' => $fld['valid'],
+				'id' 		=> $field['id'],
+				'message' 	=> $field['valid'] ? null : $field['message'],
+				'valid'		=> $field['valid'],
 			);
-			$flds[]=$rfld;
+			$fields[] = $rfld;
 		}
 		
 		// Send the results back to the browser as JSON
-		echo htmlentities(json_encode($flds), ENT_NOQUOTES, 'UTF-8');
+		echo htmlentities(json_encode($fields), ENT_NOQUOTES, 'UTF-8');
 		die();
 	}
 
@@ -231,32 +250,32 @@ class acf_field_validated_field extends acf_field{
 	*/
 	function create_options( $field ){
 		// defaults?
-		$field = array_merge($this->defaults, $field);
+		$field = array_merge( $this->defaults, $field );
 
 		// key is needed in the field names to correctly save the data
 		$key = $field['name'];
-		$sub_field = isset($field['sub_field']) ? $field['sub_field'] : $this->setup_sub_field($field);
+		$sub_field = $this->setup_sub_field( $field );
 		$sub_field['name'] = $key . '][sub_field';
 
 		// get all of the registered fields for the sub type drop down
-		$fields_names = apply_filters('acf/registered_fields', array());
+		$fields_names = apply_filters( 'acf/registered_fields', array() );
 
 		// remove types that don't jive well with this one
-		unset( $fields_names[ __("Layout",'acf') ] );
-		unset( $fields_names[ "Basic" ][ "validated_field" ] );
+		unset( $fields_names[__( 'Layout', 'acf' )] );
+		unset( $fields_names[__( 'Basic', 'acf' )][ 'validated_field' ] );
 
 		?>
 		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_readonly" id="field_option_<?php echo $key; ?>_readonly">
 			<td class="label"><label><?php _e("Read Only?",'acf_vf'); ?> </label>
 			</td>
 			<td><?php 
-			do_action('acf/create_field', array(
-				'type'	=>	'radio',
-				'name'	=>	'fields['.$key.'][read_only]',
-				'value'	=>	isset($field['read_only'])? $field['read_only'] : 'false',
+			do_action( 'acf/create_field', array(
+				'type'	=> 'radio',
+				'name'	=> 'fields['.$key.'][read_only]',
+				'value'	=> $field['read_only'],
 				'choices' => array(
-					"true"=>"Yes",
-					"false"=>"No",
+					'true'	=> 'Yes',
+					'false' => 'No',
 				),
 				'class' => 'horizontal'
 			));
@@ -264,7 +283,7 @@ class acf_field_validated_field extends acf_field{
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?>">
-			<td class="label"><label><?php _e("Validated Field",'acf'); ?> </label>
+			<td class="label"><label><?php _e( 'Validated Field', 'acf_vf' ); ?> </label>
 			<script type="text/javascript">
 			</script>
 			</td>
@@ -280,10 +299,10 @@ class acf_field_validated_field extends acf_field{
 											</label></td>
 											<td><?php
 											// Create the drop down of field types
-											do_action('acf/create_field', array(
+											do_action( 'acf/create_field', array(
 												'type'	=>	'select',
 												'name'	=>	'fields[' . $key . '][sub_field][type]',
-												'value'	=>	isset($sub_field['type'])? $sub_field['type'] : "",
+												'value'	=>	$sub_field['type'],
 												'class'	=>	'type',
 												'choices' => $fields_names
 											));
@@ -312,33 +331,37 @@ class acf_field_validated_field extends acf_field{
 			</td>
 			<td><?php _e("Use 'a' to match A-Za-z, '9' to match 0-9, and '*' to match any alphanumeric. <a href='http://digitalbush.com/projects/masked-input-plugin/' target='_new'>More info.</a>",'acf'); ?><br />
 				<?php 
-				do_action('acf/create_field', array(
-					'type'	=>	'text',
-					'name'	=>	'fields[' . $key . '][mask]',
-					'value'	=>	isset($field['mask'])? $field['mask'] : ""
-				));
+				do_action('acf/create_field', 
+					array(
+						'type'	=> 'text',
+						'name'	=> 'fields[' . $key . '][mask]',
+						'value'	=> $field['mask'],
+					)
+				);
 				?>
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
-			<td class="label"><label><?php _e("Validation Function",'acf'); ?> </label>
+			<td class="label"><label><?php _e( 'Validation Function', 'acf_cf' ); ?> </label>
 			</td>
-			<td><?php _e("How should the field be server side validated?",'acf'); ?><br />
+			<td><?php _e( "How should the field be server side validated?", 'acf_vf' ); ?><br />
 				<?php 
-				do_action('acf/create_field', array(
-					'type'	=>	'select',
-					'name'	=>	'fields[' . $key . '][function]',
-					'value'	=>	isset($field['function'])? $field['function'] : "",
-					'choices' => array(
-						"none"=>"None",
-						"regex"=>"Regular Expression",
-						//"sql"=>"SQL Query",
-						"php"=>"PHP Statement",
-					),
-					'optgroup' => true,
-					'multiple'	=>	'0',
-					'class' => 'validated_select',
-				));
+				do_action( 'acf/create_field', 
+					array(
+						'type'	=> 'select',
+						'name'	=> 'fields[' . $key . '][function]',
+						'value'	=> $field['function'],
+						'choices' => array(
+							'none' 	=> 'None',
+							'regex' => 'Regular Expression',
+							//'sql'	=> 'SQL Query',
+							'php' 	=> 'PHP Statement',
+						),
+						'optgroup' => true,
+						'multiple' => '0',
+						'class' => 'validated_select',
+					)
+				);
 				?>
 			</td>
 		</tr>
@@ -353,21 +376,21 @@ class acf_field_validated_field extends acf_field{
 					</div>
 					<div class='validation-type php'>
 						<ul>
-							<li><?php _e("Use any PHP code and return true or false. If nothing is returned it will evaluate to true.",'acf'); ?></li>
-							<li><?php _e("Available variables - <b>\$post_id</b>, <b>\$post_type</b>, <b>\$name</b>, <b>\$value</b>, <b>\$prev_value</b>, <b>&amp;\$message</b> (returned to UI).",'acf'); ?></li>
-							<li><?php _e("Example",'acf'); ?>: <code><?php _e("if (empty(\$value)){ \$message=sprint_f(\$message, get_current_user()->user_login); return false; }",'acf'); ?></code></li>
+							<li><?php _e( "Use any PHP code and return true or false. If nothing is returned it will evaluate to true.", 'acf_vf' ); ?></li>
+							<li><?php _e( "Available variables - <b>\$post_id</b>, <b>\$post_type</b>, <b>\$name</b>, <b>\$value</b>, <b>\$prev_value</b>, <b>&amp;\$message</b> (returned to UI).", 'acf_vf' ); ?></li>
+							<li><?php _e( "Example", 'acf_cf' ); ?>: <code><?php _e( "if (empty(\$value)){ \$message=sprint_f(\$message, get_current_user()->user_login); return false; }", 'acf_cf' ); ?></code></li>
 						</ul>
 					</div>
 					<div class='validation-type sql'>
-						<?php _e("SQL.",'acf'); ?>
+						<?php _e( 'SQL.', 'acf_vf' ); ?>
 						<br />
 					</div>
 				</div> 
 				<?php
 				do_action('acf/create_field', array(
-					'type'	=>	'textarea',
-					'name'	=>	'fields['.$key.'][pattern]',
-					'value'	=>	$field['pattern'],
+					'type'	=> 'textarea',
+					'name'	=> 'fields['.$key.'][pattern]',
+					'value'	=> $field['pattern'],
 					'class' => 'editor'					 
 				)); 
 				?>
@@ -380,9 +403,9 @@ class acf_field_validated_field extends acf_field{
 			</td>
 			<td><?php 
 			do_action('acf/create_field', array(
-				'type'	=>	'text',
-				'name'	=>	'fields['.$key.'][message]',
-				'value'	=>	isset($field['message'])? $field['message'] : ""
+				'type'	=> 'text',
+				'name'	=> 'fields['.$key.'][message]',
+				'value'	=> isset($field['message'])? $field['message'] : ""
 			)); 
 			?>
 			</td>
@@ -396,36 +419,38 @@ class acf_field_validated_field extends acf_field{
 			<?php 
 
 			do_action('acf/create_field', array(
-				'type'	=>	'select',
-				'name'	=>	'fields[' . $key . '][unique]',
-				'value'	=>	isset($field['unique'])? $field['unique'] : "",
+				'type'	=> 'select',
+				'name'	=> 'fields[' . $key . '][unique]',
+				'value'	=> $field['unique'],
 				'choices' => array(
-					"non-unique"=>"Non-Unique Value",
-					"global"	=>"Unique Globally",
-					"post_type"	=>"Unique For Post Type",
-					"post_key"	=>"Unique For Post Type -> Key",
+					'non-unique'=> 'Non-Unique Value',
+					'global'	=> 'Unique Globally',
+					'post_type'	=> 'Unique For Post Type',
+					'post_key'	=> 'Unique For Post Type -> Key',
 				),
-				'optgroup' => false,
-				'multiple'	=>	'0',
-				'class' => 'validated-select',
+				'optgroup' 	=> false,
+				'multiple' 	=> '0',
+				'class' 	=> 'validated-select',
 			));
 			?>
 			</p>
 			<div class="unique_statuses">
-			<p><?php _e("Apply to which post statuses?", 'acf_vf'); ?><br/>
+			<p><?php _e( 'Apply to which post statuses?', 'acf_vf'); ?><br/>
 			<?php
 			$statuses = $this->get_post_statuses();
 			$choices = array();
-			foreach ($statuses as $value => $status) {
+			foreach ( $statuses as $value => $status ) {
 				$choices[$value] = $status->label;
 			}
 
-			do_action('acf/create_field', array(
-				'type'	=>	'checkbox',
-				'name'	=>	'fields['.$key.'][unique_statuses]',
-				'value'	=>	isset($field['unique_statuses'])? $field['unique_statuses'] : $this->unique_statuses,
-				'choices' => $choices,
-			)); 
+			do_action( 'acf/create_field', 
+				array(
+					'type'	=> 'checkbox',
+					'name'	=> 'fields['.$key.'][unique_statuses]',
+					'value'	=> $field['unique_statuses'],
+					'choices' => $choices,
+				)
+			); 
 			?></p>
 			</div>
 			</div>
@@ -513,15 +538,10 @@ class acf_field_validated_field extends acf_field{
 		global $post;
     	global $pagenow;
     	$is_new = $pagenow=='post-new.php';
-
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-
-		// create Field HTML
-		$sub_field = $this->setup_sub_field($field);
+    	$field = array_merge( $this->defaults, $field );
+		$sub_field = $this->setup_sub_field( $field );
 		?>
 		<div class="validated-field">
-			<div class='validation-errors'></div>
 			<?php
 			if ( $field['read_only'] === 'true' ){
 				?>
@@ -607,7 +627,6 @@ class acf_field_validated_field extends acf_field{
 	*  @date	23/01/13
 	*/
 	function field_group_admin_enqueue_scripts(){
-		// enqueue scripts
 		wp_enqueue_script( 'ace-editor', '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js', array(), $this->settings['version'] );
 	}
 
@@ -640,12 +659,8 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$value - the value to be saved in te database
 	*/
 	function load_value( $value, $post_id, $field ){
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
-		$value = apply_filters('acf/load_value/type='.$sub_field['type'], $value, $post_id, $sub_field);
-		return $value;
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		return apply_filters( 'acf/load_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
 	/*
@@ -664,12 +679,8 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$value - the modified value
 	*/
 	function update_value( $value, $post_id, $field ){
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
-		$value = apply_filters('acf/update_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
-		return $value;
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		return apply_filters( 'acf/update_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
 	/*
@@ -688,12 +699,8 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$value	- the modified value
 	*/
 	function format_value( $value, $post_id, $field ){
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
-		$value = apply_filters('acf/format_value/type='.$sub_field['type'], $value, $post_id, $sub_field);
-		return $value;
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		return apply_filters('acf/format_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
 	/*
@@ -712,12 +719,8 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$value	- the modified value
 	*/
 	function format_value_for_api( $value, $post_id, $field ){
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
-		$value = apply_filters('acf/format_value_for_api/type='.$sub_field['type'], $value, $post_id, $sub_field);
-		return $value;
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		return apply_filters('acf/format_value_for_api/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
 	/*
@@ -735,18 +738,12 @@ class acf_field_validated_field extends acf_field{
 	*/
 	function load_field( $field ){
 		global $currentpage;
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
 		$sub_field = apply_filters('acf/load_field/type='.$sub_field['type'], $sub_field);
 		$field['sub_field'] = $sub_field;
-
 		if ( $field['read_only'] && $currentpage == 'edit.php' ){
 			$field['label'] = $field['label'].' <i class="fa fa-link" title="Read only"></i>';
 		}
-
-
 		return $field;
 	}
 
@@ -765,11 +762,8 @@ class acf_field_validated_field extends acf_field{
 	*  @return	$field - the modified field
 	*/
 	function update_field( $field, $post_id ){
-		// defaults?
-		$field = array_merge($this->defaults, $field);
-		// sub field
-		$sub_field = $this->setup_sub_field($field);
-		$sub_field = apply_filters('acf/update_field/type='.$sub_field['type'], $sub_field, $post_id ); // new filter
+		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field, $post_id ); // new filter
 		$field['sub_field'] = $sub_field;
 		return $field;
 	}

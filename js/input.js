@@ -27,7 +27,6 @@ var vf = {
 				var field = { 
 						id: $(elem).attr('name'),
 						value: $(elem).val(),
-						//message: 'Server-side validation error.',
 						valid: false,
 				};
 				fields.push(field);
@@ -70,9 +69,9 @@ var vf = {
 					if (!fld.valid){
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
-						field = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]').closest('.field');
+						field = $('#'+fld.id).closest('.validated-field');
 						label = field.parent().find('p.label:first');
-						label.append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
+						field.append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
 						field.find('.widefat').css('width','100%');
 					}
 				}
