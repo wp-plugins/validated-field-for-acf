@@ -199,7 +199,6 @@ class acf_field_validated_field extends acf_field {
 						$sql = null;
 						break;
 				}
-				error_log($sql);
 
 				// Only run if we hit a condition above
 				if ( ! empty( $sql ) ){

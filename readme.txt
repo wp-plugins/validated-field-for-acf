@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 1.1.1
+Stable tag: 1.1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,9 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.1.1.1 =
+* Remove debug error_log() statement from v1.1.1
+
 = 1.1.1 =
 * Clean up PHP to WordPress standards
 * Fix PHP Notice breaking AJAX call
