@@ -1,4 +1,4 @@
-=== Advanced Custom Field for ACF ===
+=== Advanced Custom Fields: Validated Field ===
 Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
 Requires at least: 3.0
