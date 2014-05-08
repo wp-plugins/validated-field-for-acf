@@ -1,6 +1,7 @@
 var vf = {
-	valid : false,
-	lastclick : false
+	valid 		: false,
+	lastclick 	: false,
+	debug 		: false
 };
 
 (function($){
@@ -24,12 +25,15 @@ var vf = {
 			parent = $(this).closest('.field');
 			
 			$(this).find('input[type="text"], input[type="hidden"], textarea, select, input[type="checkbox"]:checked').each(function(index, elem){
-				var field = { 
-						id: $(elem).attr('name'),
-						value: $(elem).val(),
-						valid: false,
-				};
-				fields.push(field);
+				el = $(elem);
+				if (el.attr('name') && el.attr('name').indexOf('acfcloneindex')<0){
+					var field = { 
+							id: el.attr('name'),
+							value: el.val(),
+							valid: false,
+					};
+					fields.push(field);
+				}
 			});
 		});
 
@@ -69,9 +73,9 @@ var vf = {
 					if (!fld.valid){
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
-						field = $('#'+fld.id).closest('.validated-field');
-						label = field.parent().find('p.label:first');
-						field.append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
+						input = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]');
+						field = input.closest('.validated-field');
+						input.parent().parent().append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
 						field.find('.widefat').css('width','100%');
 					}
 				}
@@ -81,10 +85,13 @@ var vf = {
 			clickObj.removeClass('button-primary-disabled').removeClass('disabled');
 			$('#ajax-loading').attr('style','');
 			$('#publishing-action .spinner').hide();
-			if(vf.valid) {
-				clickObj.click();
-			} else {
+			if ( !vf.valid ){
 				$('.field_type-validated_field .acf-error-message').show();
+			} else if ( vf.debug ){
+				vf.valid = confirm("The fields are valid, do you want to submit the form?");
+			} 
+			if (vf.valid) {
+				clickObj.click();
 			}
 		}
 	}
