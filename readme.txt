@@ -3,14 +3,14 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
 
 == Description ==
-The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field\'s uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only .
+The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field\'s uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
 
 == Installation ==
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
@@ -28,6 +28,11 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.2.1 =
+* Show \'Validation Failed\' message in header as needed.
+* Mark form as dirty when input element values change.
+* Fix return of $message from field configuration to UI
+
 = 1.2 =
 * Support for Repeater Validated Fields
 * Support for debugging with ACF_VF_DEBUG constant

@@ -124,11 +124,7 @@ class acf_field_validated_field extends acf_field {
 		$return_fields = array();
 		header( 'HTTP/1.1 200 OK' ); 			// be positive!
 		foreach ( $inputs as $i=>$input ){ 		// loop through each field
-			//if ( empty( $input['value'] ) ) 
-			//	continue;						// we don't process empty values, the required checkbox handles that
-			$value = $input['value'];			// the submitted value
 			$valid = true; 						// wait for a any test to fail
-			$message = null;
 
 			// extract the field key
 			preg_match( '/\\[([^\\]]*?)\\](\\[(\d*?)\\]\\[([^\\]]*?)\\])?/', $input['id'], $matches );
@@ -153,12 +149,14 @@ class acf_field_validated_field extends acf_field {
 				}
 			}
 
+			$value = $input['value'];			// the submitted value
 			if ( $field['required'] && empty( $value ) ){
-				continue; // let the required field handle it
+				continue; 						// let the required field handle it
 			}
 			
 			$function = $field['function']; 	// what type of validation?
 			$pattern = $field['pattern']; 		// string to use for validation
+			$message = $field['message'];		// failure message to return to the UI
 			if ( ! empty( $function ) && ! empty( $pattern ) ){
 				// only run these checks if we have a pattern
 				switch ( $function ){

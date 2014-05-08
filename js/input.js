@@ -6,11 +6,20 @@ var vf = {
 
 (function($){
 
-	$(document).on("click", "form#post input", function(){
+	var inputSelector = 'input[type="text"], input[type="hidden"], textarea, select, input[type="checkbox"]:checked';
+
+	$(document).on('change', inputSelector, function(){
+		vf.valid = false;
+	});
+
+	$(document).on('click', 'form#post input', function(){
 		vf.lastclick = $(event.srcElement);
 	});
 	
-	$(document).on("submit", "form#post", function(){
+	$(document).on('submit', 'form#post', function(){
+		$('.field_type-validated_field').find('.acf-error-message').remove();
+		$(this).siblings('#acfvf_message').remove();
+			
 		if (!vf.valid){
 			return do_validation(vf.lastclick);
 		} 
@@ -20,11 +29,10 @@ var vf = {
 	function do_validation(clickObj){
 		if (!clickObj) return;
 		fields = [];
-		$('.field_type-validated_field').find('.acf-error-message').remove();
 		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
 			
-			$(this).find('input[type="text"], input[type="hidden"], textarea, select, input[type="checkbox"]:checked').each(function(index, elem){
+			$(this).find(inputSelector).each(function(index, elem){
 				el = $(elem);
 				if (el.attr('name') && el.attr('name').indexOf('acfcloneindex')<0){
 					var field = { 
@@ -74,8 +82,9 @@ var vf = {
 						valid = false;
 						msg = $('<div/>').html(fld.message).text();
 						input = $('[name="'+fld.id.replace('[', '\\[').replace(']', '\\]')+'"]');
-						field = input.closest('.validated-field');
 						input.parent().parent().append('<span class="acf-error-message"><i class="bit"></i>' + msg + '</span>');
+						field = input.closest('.field');
+						field.addClass('error');
 						field.find('.widefat').css('width','100%');
 					}
 				}
@@ -86,6 +95,7 @@ var vf = {
 			$('#ajax-loading').attr('style','');
 			$('#publishing-action .spinner').hide();
 			if ( !vf.valid ){
+				$('form#post').before('<div id="acfvf_message" class="error"><p>Validation Failed. See errors below.</p></div>');
 				$('.field_type-validated_field .acf-error-message').show();
 			} else if ( vf.debug ){
 				vf.valid = confirm("The fields are valid, do you want to submit the form?");
