@@ -2,8 +2,8 @@
 Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
 Requires at least: 3.0
-Tested up to: 3.9
-Stable tag: 1.2.1
+Tested up to: 3.9.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,11 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.2.2 =
+* Properly include plugin version number on JavaScript enqueue for caching and PHP notices.
+* Use minified JavaScript unless `ACF_VF_DEBUG` is set to true.
+* Tested against WordPress 3.9.1
+
 = 1.2.1 =
 * Show \'Validation Failed\' message in header as needed.
 * Mark form as dirty when input element values change.
@@ -35,7 +40,7 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 = 1.2 =
 * Support for Repeater Validated Fields
-* Support for debugging with ACF_VF_DEBUG constant
+* Support for debugging with `ACF_VF_DEBUG` constant
 * Clean up variable names, more code standardization
 * Better handling of required fields with validation
 

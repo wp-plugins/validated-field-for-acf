@@ -20,9 +20,9 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function __construct(){
 		// vars
-		$this->name 		= 'validated_field';
-		$this->label 		= __( 'Validated Field', 'acf_vf' );
-		$this->category 	= __( 'Basic', 'acf');
+		$this->name 	= 'validated_field';
+		$this->label 	= __( 'Validated Field', 'acf_vf' );
+		$this->category	= __( 'Basic', 'acf');
 
 		// the default checked statuses for unique queries
 		$this->unique_statuses = apply_filters( 'acf_vf/unique_statuses', $this->unique_statuses );
@@ -51,9 +51,10 @@ class acf_field_validated_field extends acf_field {
     	parent::__construct();
     	
     	// settings
-		$this->settings 	= array(
-			'path' => apply_filters( 'acf/helpers/get_path', __FILE__ ),
-			'dir' => apply_filters( 'acf/helpers/get_dir', __FILE__ ),
+		$this->settings = array(
+			'path' 		=> apply_filters( 'acf/helpers/get_path', __FILE__ ),
+			'dir' 		=> apply_filters( 'acf/helpers/get_dir', __FILE__ ),
+			'version' 	=> ACF_VF_VERSION,
 		);
 
 		add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
@@ -111,64 +112,62 @@ class acf_field_validated_field extends acf_field {
 	*
 	*/
 	function ajax_validate_fields() {
-
-		$post_id = isset( $_REQUEST['post_id'] )? 
+		$post_id = isset( $_REQUEST['post_id'] )? 	// the submitted post_id
 			$_REQUEST['post_id'] : 
 			0;
+		$post_type = get_post_type( $post_id ); 	// the type of the submitted post
+
+		// the validated field inputs to process
 		$inputs = ( isset( $_REQUEST['fields'] ) && is_array( $_REQUEST['fields'] ) )? 
 			$_REQUEST['fields'] : 
 			array();
 
-		$post_type = get_post_type( $post_id );
-
-		$return_fields = array();
-		header( 'HTTP/1.1 200 OK' ); 			// be positive!
-		foreach ( $inputs as $i=>$input ){ 		// loop through each field
-			$valid = true; 						// wait for a any test to fail
+		header( 'HTTP/1.1 200 OK' ); 				// be positive!
+		$return_fields = array();					// JSON response to the client
+		foreach ( $inputs as $i=>$input ){ 			// loop through each field
+			$valid = true; 							// wait for a any test to fail
 
 			// extract the field key
 			preg_match( '/\\[([^\\]]*?)\\](\\[(\d*?)\\]\\[([^\\]]*?)\\])?/', $input['id'], $matches );
-			$key = $matches[1];
-			$index = $matches[3];
-			$sub_key = $matches[4];
+			$key = $matches[1];						// the key for this ACF
+			$index = $matches[3];					// the field index, if it is a repeater
+			$sub_key = $matches[4];					// the key for the sub field, if it is a repeater
 
 			$field = array_merge( $this->defaults, get_field_object( $key, $post_id ) ); // load the field config, set defaults
 			$sub_field = $this->setup_sub_field( $field );
 
 			// if it's a repeater field, get the validated field so we can do meta queries...
 			if ( $is_repeater = ( 'repeater' == $field['type'] && $index != null ) ){
-				// The Repeater is the parent
 				foreach ( $field['sub_fields'] as $repeater ){
 					$sub_sub_field = $this->setup_sub_field( $repeater );
 					if ( $sub_key == $sub_sub_field['key'] ){
-						$parent_field = $field;
-						$field = $repeater;
-						$sub_field = $sub_sub_field;
+						$parent_field = $field;		// we are going to map down a level, but track the top level field
+						$field = $repeater;			// the '$field' should be the Validated Field
+						$sub_field = $sub_sub_field; // and here is the field to display
 						break;
 					}
 				}
 			}
 
-			$value = $input['value'];			// the submitted value
+			$value = $input['value'];				// the submitted value
 			if ( $field['required'] && empty( $value ) ){
-				continue; 						// let the required field handle it
+				continue; 							// let the required field handle it
 			}
 			
-			$function = $field['function']; 	// what type of validation?
-			$pattern = $field['pattern']; 		// string to use for validation
-			$message = $field['message'];		// failure message to return to the UI
+			$function = $field['function']; 		// what type of validation?
+			$pattern = $field['pattern']; 			// string to use for validation
+			$message = $field['message'];			// failure message to return to the UI
 			if ( ! empty( $function ) && ! empty( $pattern ) ){
-				// only run these checks if we have a pattern
-				switch ( $function ){
-					case 'regex': 				// check for any matches to the regular expression
+				switch ( $function ){				// only run these checks if we have a pattern
+					case 'regex': 					// check for any matches to the regular expression
 						$pattern_fltr = '/' . str_replace( "/", "\/", $pattern ) . '/';
 						if ( ! preg_match( $pattern_fltr, $value ) ){
-							$valid = false; 	// return false if there are no matches
+							$valid = false; 		// return false if there are no matches
 						}
 						break;
-					case 'sql': 				// todo: sql checks?
+					case 'sql': 					// todo: sql checks?
 						break;
-					case 'php': 				// this code is a little tricky, one bad eval() can break the lot. needs a nonce.
+					case 'php': 					// this code is a little tricky, one bad eval() can break the lot. needs a nonce.
 						$this_key = $field['name'];
 						if ( $is_repeater ) $this_key .= '_' . $index . '_' . $sub_sub_field['name'];
 
@@ -643,8 +642,9 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function input_admin_enqueue_scripts(){
 		// register acf scripts
-		wp_register_script( 'acf-validated_field', $this->settings['dir'] . 'js/input.js', array('acf-input'), $this->settings['version'] );
-		wp_register_script( 'jquery-masking', $this->settings['dir'] . 'js/jquery.maskedinput.min.js', array('jquery'), $this->settings['version']);
+		$min = ( ! $this->debug )? '.min' : '';
+		wp_register_script( 'acf-validated_field', $this->settings['dir'] . "js/input{$min}.js", array('acf-input'), $this->settings['version'] );
+		wp_register_script( 'jquery-masking', $this->settings['dir'] . "js/jquery.maskedinput{$min}.js", array('jquery'), $this->settings['version']);
 		wp_register_script( 'sh-core', $this->settings['dir'] . 'js/shCore.js', array('acf-input'), $this->settings['version'] );
 		wp_register_script( 'sh-autoloader', $this->settings['dir'] . 'js/shAutoloader.js', array('sh-core'), $this->settings['version']);
 		
@@ -832,7 +832,7 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function update_field( $field, $post_id ){
 		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
-		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field, $post_id ); // new filter
+		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field, $post_id );
 		$field['sub_field'] = $sub_field;
 		return $field;
 	}
