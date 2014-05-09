@@ -45,9 +45,9 @@ class acf_field_validated_field extends acf_field {
 		);
 
 		// do not delete!
-    	parent::__construct();
-    	
-    	// settings
+		parent::__construct();
+
+		// settings
 		$this->settings = array(
 			'path' 		=> apply_filters( 'acf/helpers/get_path', __FILE__ ),
 			'dir' 		=> apply_filters( 'acf/helpers/get_dir', __FILE__ ),
@@ -85,10 +85,10 @@ class acf_field_validated_field extends acf_field {
 	*  @type 	function
 	*
 	*/
-    function get_post_statuses() {
-        global $wp_post_statuses;
-        return $wp_post_statuses;
-    }
+	function get_post_statuses() {
+		global $wp_post_statuses;
+		return $wp_post_statuses;
+	}
 
 	/*
 	*  valid_date()
@@ -551,21 +551,21 @@ class acf_field_validated_field extends acf_field {
 			jQuery(document).ready(function(){
 				jQuery("#acf-field-<?php echo $html_key; ?>_pattern").hide();
 				var editor = ace.edit("acf-field-<?php echo $html_key; ?>_editor");
-			    editor.setTheme("ace/theme/monokai");
-			    editor.getSession().setMode("ace/mode/text");
-			    editor.getSession().on('change', function(e){
-			    	var val = editor.getValue();
-			    	var func = jQuery('#acf-field-<?php echo $html_key; ?>_function').val();
-			    	if (func=='php'){
-			    		val = val.substr(val.indexOf('\n')+1);
-			    	} else if (func=='regex'){
-			    		if (val.indexOf('\n')>0){
-			    			editor.setValue(val.trim().split('\n')[0]);
-			    		}
-			    	}
-			    	jQuery("#acf-field-<?php echo $html_key; ?>_pattern").val(val);
-			    });
-			    jQuery("#acf-field-<?php echo $html_key; ?>_editor").data('editor', editor);
+				editor.setTheme("ace/theme/monokai");
+				editor.getSession().setMode("ace/mode/text");
+				editor.getSession().on('change', function(e){
+					var val = editor.getValue();
+					var func = jQuery('#acf-field-<?php echo $html_key; ?>_function').val();
+					if (func=='php'){
+						val = val.substr(val.indexOf('\n')+1);
+					} else if (func=='regex'){
+						if (val.indexOf('\n')>0){
+							editor.setValue(val.trim().split('\n')[0]);
+						}
+					}
+					jQuery("#acf-field-<?php echo $html_key; ?>_pattern").val(val);
+				});
+				jQuery("#acf-field-<?php echo $html_key; ?>_editor").data('editor', editor);
 
 				jQuery('#acf-field-<?php echo $html_key; ?>_function').on('change',function(){
 					jQuery('#validated-<?php echo $html_key; ?>-info div').hide(300);
@@ -577,7 +577,7 @@ class acf_field_validated_field extends acf_field {
 					}
 					var sPhp = '<'+'?'+'php';
 					var editor = jQuery('#acf-field-<?php echo $html_key; ?>_editor').data('editor');
-			    	var val = editor.getValue();
+					var val = editor.getValue();
 					if (jQuery(this).val()=='none'){
 						jQuery('#field_option_<?php echo $html_key; ?>_validation, #field_option_<?php echo $html_key; ?>_message').hide(300);
 					} else {
@@ -585,17 +585,17 @@ class acf_field_validated_field extends acf_field {
 							if (val.indexOf(sPhp)!=0){
 								editor.setValue(sPhp +'\n' + val);
 							}
-			    			editor.getSession().setMode("ace/mode/php");
-			    			jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','200px');
+							editor.getSession().setMode("ace/mode/php");
+							jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','200px');
 						} else {
 							if (val.indexOf(sPhp)==0){
 								editor.setValue(val.substr(val.indexOf('\n')+1));
 							}
-			    			editor.getSession().setMode("ace/mode/text");
-			    			jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','18px');
+							editor.getSession().setMode("ace/mode/text");
+							jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','18px');
 						}
-			    		editor.resize()
-			    		editor.gotoLine(1, 1, false);
+						editor.resize()
+						editor.gotoLine(1, 1, false);
 						jQuery('#field_option_<?php echo $html_key; ?>_validation, #field_option_<?php echo $html_key; ?>_message').show(300);
 					}
 				});
@@ -630,8 +630,8 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function create_field( $field ){
 		global $post, $pagenow;
-    	$is_new = $pagenow=='post-new.php';
-    	$field = $this->setup_field( $field );
+		$is_new = $pagenow=='post-new.php';
+		$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
 		?>
 		<div class="validated-field">
