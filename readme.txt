@@ -10,6 +10,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
 
 == Description ==
+= Validated Field Add-On =
 The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/)
 provides a wrapper for other input types which allows you to provide client side input masking using the jQuery 
 [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions 
