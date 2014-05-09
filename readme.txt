@@ -13,7 +13,7 @@ The Validated Field add-on for Advanced Custom Fields provides input masking and
 The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/)
 provides a wrapper for other input types which allows you to provide client side input masking using the jQuery 
 [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions 
-or PHP code, the option of ensuring a field's uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
+or PHP code, the option of ensuring a field's uniqueness by `post_type` and `meta_key`, `post_type`, or site wide, as well as marking a field as read-only.
 
 = Features =
 1. **Input Masking** - easily set masks on text inputs to ensure data is properly formatted.
