@@ -10,15 +10,15 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
 
 == Description ==
-The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field\'s uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
+The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field's uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
 
 == Installation ==
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
-2. Activate the plugin through the \'Plugins\' menu in WordPress
+2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Configure validated fields within the Advanced Custom Fields menus
 
 == Frequently Asked Questions ==
-= I\'ve activated the Validated Fields plugin, but nothing happens =
+= I've activated the Validated Fields plugin, but nothing happens =
 Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed, and that it is activated. Validated Field should appear as a new input type.
 
 == Screenshots ==
@@ -39,7 +39,7 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 * Tested up to WordPress 3.9.1
 
 = 1.2.1 =
-* Show \'Validation Failed\' message in header as needed.
+* Show 'Validation Failed' message in header as needed.
 * Mark form as dirty when input element values change.
 * Fix return of $message from field configuration to UI
 
