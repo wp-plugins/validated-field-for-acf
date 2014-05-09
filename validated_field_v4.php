@@ -2,10 +2,10 @@
 if ( class_exists( 'acf_Field' ) && ! class_exists( 'acf_field_validated_field' ) ):
 class acf_field_validated_field extends acf_field {
 	// vars
-	var $settings, 					// will hold info such as dir / path
-		$defaults, 					// will hold default field options
-		$sub_defaults, 				// will hold default sub field options
-		$debug;						// if true, don't use minified and confirm form submit 				
+	var $settings,					// will hold info such as dir / path
+		$defaults,					// will hold default field options
+		$sub_defaults,				// will hold default sub field options
+		$debug;						// if true, don't use minified and confirm form submit					
 
 	/*
 	*  __construct
@@ -17,30 +17,30 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function __construct(){
 		// vars
-		$this->name 	= 'validated_field';
-		$this->label 	= __( 'Validated Field', 'acf_vf' );
+		$this->name		= 'validated_field';
+		$this->label	= __( 'Validated Field', 'acf_vf' );
 		$this->category	= __( 'Basic', 'acf');
-		$this->debug 	= defined( 'ACF_VF_DEBUG' )? ACF_VF_DEBUG : false;
-		$this->drafts 	= defined( 'ACF_VF_DRAFTS' )? ACF_VF_DRAFTS : true;
+		$this->debug	= defined( 'ACF_VF_DEBUG' )? ACF_VF_DEBUG : false;
+		$this->drafts	= defined( 'ACF_VF_DRAFTS' )? ACF_VF_DRAFTS : true;
 
 		$this->defaults = array(
 			'read_only' => false,
-			'mask' 		=> '',
-			'function' 	=> 'none',
-			'pattern' 	=> '',
-			'message' 	=>  __( 'Validation failed.', 'acf_vf' ),
-			'unique' 	=> 'non-unique',
+			'mask'		=> '',
+			'function'	=> 'none',
+			'pattern'	=> '',
+			'message'	=>  __( 'Validation failed.', 'acf_vf' ),
+			'unique'	=> 'non-unique',
 			'unique_statuses' => apply_filters( 'acf_vf/unique_statuses', array( 'publish', 'future' ) ),
 			'drafts'	=> true,
 		);
 
 		$this->sub_defaults = array(
-			'type' 		=> '',
-			'key' 		=> '',
-			'name' 		=> '',
-			'_name' 	=> '',
-			'id' 		=> '',
-			'value' 	=> '',
+			'type'		=> '',
+			'key'		=> '',
+			'name'		=> '',
+			'_name'		=> '',
+			'id'		=> '',
+			'value'		=> '',
 			'field_group' => '',
 		);
 
@@ -49,9 +49,9 @@ class acf_field_validated_field extends acf_field {
 
 		// settings
 		$this->settings = array(
-			'path' 		=> apply_filters( 'acf/helpers/get_path', __FILE__ ),
-			'dir' 		=> apply_filters( 'acf/helpers/get_dir', __FILE__ ),
-			'version' 	=> ACF_VF_VERSION,
+			'path'		=> apply_filters( 'acf/helpers/get_path', __FILE__ ),
+			'dir'		=> apply_filters( 'acf/helpers/get_dir', __FILE__ ),
+			'version'	=> ACF_VF_VERSION,
 		);
 
 		add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
@@ -67,7 +67,7 @@ class acf_field_validated_field extends acf_field {
 
 	function setup_sub_field( $field ){
 		$sub_field = isset( $field['sub_field'] )? 
-			$field['sub_field'] : 	// already set up
+			$field['sub_field'] :	// already set up
 			array();				// create it
 		// mask the sub field as the parent by giving it the same key values
 		foreach( array( 'key', 'name', '_name', 'id', 'value', 'field_group' ) as $key ){
@@ -82,7 +82,7 @@ class acf_field_validated_field extends acf_field {
 	*
 	*  Get the various post statuses that have been registered
 	*
-	*  @type 	function
+	*  @type		function
 	*
 	*/
 	function get_post_statuses() {
@@ -95,7 +95,7 @@ class acf_field_validated_field extends acf_field {
 	*
 	*  Ensure that a string is in the format YYYY-MM-DD h:m:i
 	*
-	*  @type 	function
+	*  @type		function
 	*
 	*/
 	function valid_date($date){
@@ -112,14 +112,14 @@ class acf_field_validated_field extends acf_field {
 	*
 	*  Parse the input when a page is submitted to determine if it is valid or not.
 	*
-	*  @type 	ajax action
+	*  @type		ajax action
 	*
 	*/
 	function ajax_validate_fields() {
-		$post_id = isset( $_REQUEST['post_id'] )? 	// the submitted post_id
+		$post_id = isset( $_REQUEST['post_id'] )?	// the submitted post_id
 			$_REQUEST['post_id'] : 
 			0;
-		$post_type = get_post_type( $post_id ); 	// the type of the submitted post
+		$post_type = get_post_type( $post_id );		// the type of the submitted post
 
 		$click_id =  isset( $_REQUEST['click_id'] )? // the ID of the clicked element, for drafts/publish
 			$_REQUEST['click_id'] : 
@@ -130,10 +130,10 @@ class acf_field_validated_field extends acf_field {
 			$_REQUEST['fields'] : 
 			array();
 
-		header( 'HTTP/1.1 200 OK' ); 				// be positive!
+		header( 'HTTP/1.1 200 OK' );				// be positive!
 		$return_fields = array();					// JSON response to the client
-		foreach ( $inputs as $i=>$input ){ 			// loop through each field
-			$valid = true; 							// wait for a any test to fail
+		foreach ( $inputs as $i=>$input ){			// loop through each field
+			$valid = true;							// wait for a any test to fail
 
 			// extract the field key
 			preg_match( '/\\[([^\\]]*?)\\](\\[(\d*?)\\]\\[([^\\]]*?)\\])?/', $input['id'], $matches );
@@ -161,27 +161,27 @@ class acf_field_validated_field extends acf_field {
 
 			$value = $input['value'];				// the submitted value
 			if ( $field['required'] && empty( $value ) ){
-				continue; 							// let the required field handle it
+				continue;							// let the required field handle it
 			}
 
 			if ( $click_id != 'publish' && !$field['drafts'] ){
 				continue;							// we aren't publishing and we don't want to validate drafts
 			}
 			
-			$function = $field['function']; 		// what type of validation?
-			$pattern = $field['pattern']; 			// string to use for validation
+			$function = $field['function'];			// what type of validation?
+			$pattern = $field['pattern'];			// string to use for validation
 			$message = $field['message'];			// failure message to return to the UI
 			if ( ! empty( $function ) && ! empty( $pattern ) ){
 				switch ( $function ){				// only run these checks if we have a pattern
-					case 'regex': 					// check for any matches to the regular expression
+					case 'regex':					// check for any matches to the regular expression
 						$pattern_fltr = '/' . str_replace( "/", "\/", $pattern ) . '/';
 						if ( ! preg_match( $pattern_fltr, $value ) ){
-							$valid = false; 		// return false if there are no matches
+							$valid = false;			// return false if there are no matches
 						}
 						break;
-					case 'sql': 					// todo: sql checks?
+					case 'sql':						// todo: sql checks?
 						break;
-					case 'php': 					// this code is a little tricky, one bad eval() can break the lot. needs a nonce.
+					case 'php':						// this code is a little tricky, one bad eval() can break the lot. needs a nonce.
 						$this_key = $field['name'];
 						if ( $is_repeater ) $this_key .= '_' . $index . '_' . $sub_sub_field['name'];
 
@@ -292,8 +292,8 @@ class acf_field_validated_field extends acf_field {
 			}
 
 			$return_fields[] = array(
-				'id' 		=> $input['id'],
-				'message' 	=> ! $valid? ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ) : '',
+				'id'		=> $input['id'],
+				'message'	=> ! $valid? ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ) : '',
 				'valid'		=> $valid,
 			);
 		}
@@ -441,10 +441,10 @@ class acf_field_validated_field extends acf_field {
 						'name'	=> 'fields[' . $key . '][function]',
 						'value'	=> $field['function'],
 						'choices' => array(
-							'none' 	=> 'None',
+							'none'	=> 'None',
 							'regex' => 'Regular Expression',
 							//'sql'	=> 'SQL Query',
-							'php' 	=> 'PHP Statement',
+							'php'	=> 'PHP Statement',
 						),
 						'optgroup' => true,
 						'multiple' => '0',
@@ -520,9 +520,9 @@ class acf_field_validated_field extends acf_field {
 						'post_type'	=> 'Unique For Post Type',
 						'post_key'	=> 'Unique For Post Type -> Key',
 					),
-					'optgroup' 	=> false,
-					'multiple' 	=> '0',
-					'class' 	=> 'validated-select',
+					'optgroup'	=> false,
+					'multiple'	=> '0',
+					'class'		=> 'validated-select',
 				)
 			);
 			?>
