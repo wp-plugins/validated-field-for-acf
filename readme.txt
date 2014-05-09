@@ -1,6 +1,6 @@
 === Advanced Custom Fields: Validated Field ===
 Contributors: doublesharp
-Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
+Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 3.9.1
 Stable tag: 1.2.3
@@ -10,7 +10,20 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
 
 == Description ==
-The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) *(version 4+)* provides a wrapper for other input types which allows you to provide client side input masking using the jQuery [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions or PHP code, the option of ensuring a field's uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
+The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/)
+provides a wrapper for other input types which allows you to provide client side input masking using the jQuery 
+[Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions 
+or PHP code, the option of ensuring a field's uniqueness by post type and key, post type, or side wide, as well as marking a field as read-only.
+
+= Features =
+1. **Input Masking** - easily set masks on text inputs to ensure data is properly formatted.
+2. **Server Side Validation** - validate the inputs using server side PHP code or regular expressions.
+3. **Uniqueness** - ensure that the value being updated is not already in use.
+4. **Repeater Fields** - validated fields within a [Repeater Field](http://www.advancedcustomfields.com/add-ons/repeater-field/).
+5. **Read Only** - specify a field a read-only allowing it to be displayed but not updated. *BETA*
+
+= Compatibility =
+Requires [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) version 4.0 or greater.
 
 == Installation ==
 1. Download the plugin and extract to the `/wp-content/plugins/` directory
@@ -19,7 +32,8 @@ The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org
 
 == Frequently Asked Questions ==
 = I've activated the Validated Fields plugin, but nothing happens =
-Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed, and that it is activated. Validated Field should appear as a new input type.
+Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed, and that it is activated. 
+Validated Field will appear as a new input type in the field group editor.
 
 == Screenshots ==
 1. Example configuration to validate a telephone number field.
@@ -41,37 +55,37 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 = 1.2.1 =
 * Show 'Validation Failed' message in header as needed.
 * Mark form as dirty when input element values change.
-* Fix return of $message from field configuration to UI
+* Fix return of `$message` from field configuration to UI.
 
 = 1.2 =
-* Support for Repeater Validated Fields
-* Support for debugging with `ACF_VF_DEBUG` constant
-* Clean up variable names, more code standardization
-* Better handling of required fields with validation
+* Support for [Repeater Field](http://www.advancedcustomfields.com/add-ons/repeater-field/) Validated Fields.
+* Support for debugging with `ACF_VF_DEBUG` constant.
+* Clean up variable names, more code standardization.
+* Better handling of required fields with validation.
 
 = 1.1.1.1 =
-* Remove debug `error_log()` statement from v1.1.1
+* Remove debug `error_log()` statement from v1.1.1.
 
 = 1.1.1 =
-* Clean up PHP to WordPress standards
-* Fix PHP Notice breaking AJAX call
-* Use defaults to prevent invalid array indexes
-* Update JavaScript for UI Errors
-* More localization prep for text
+* Clean up PHP to WordPress standards.
+* Fix PHP Notice breaking AJAX call.
+* Use defaults to prevent invalid array indexes.
+* Update JavaScript for UI Errors.
+* More localization prep for text.
 
 = 1.1 = 
-* Add Read-only functionality (beta)
-* Use standard ACF error/messaging
-* Correctly process \"preview\" clicks, fixes error where the post would be published
-* Register CSS only in required locations
-* Properly apply subfield filters for `acf/load_value/type=`, `acf/update_value/type=`, `acf/format_value/type=` , `acf/format_value_for_api/type=`, `acf/load_field/type=`, `acf/update_field/type=`
-* Tested up to WordPress 3.9
+* Add Read-only functionality (beta).
+* Use standard ACF error/messaging.
+* Correctly process "preview" clicks, fixes error where the post would be published.
+* Register CSS only in required locations.
+* Properly apply subfield filters for `acf/load_value/type=`, `acf/update_value/type=`, `acf/format_value/type=`, `acf/format_value_for_api/type=`, `acf/load_field/type=`, `acf/update_field/type=`.
+* Tested up to WordPress 3.9.
 
 = 1.0.7 =
 * Critical bug fix for selecting Validated Field type.
 
 = 1.0.6 =
-* Bug fix $sub_field properties not saving (use `acf/create_field_options` action).
+* Bug fix `$sub_field` properties not saving (use `acf/create_field_options` action).
 * Bug fix multiple Validated Fields in a set - correct to always use unique selectors.
 * Allow for unique query to be run on selected post statuses.
 * Set default statuses included in unique queries with filter of `acf_vf/unique_statuses`.
@@ -85,10 +99,10 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 
 = 1.0.4 =
 * Fix javascript error when including ace.js, props @nikademo.
-* Fix “Undefined index” PHP notice, props @ikivanov.
+* Fix "Undefined index" PHP notice, props @ikivanov.
 
 = 1.0.3 =
-* Bug fix for unique field values per post_type. Props @ikivanov.
+* Bug fix for unique field values per `post_type`. Props @ikivanov.
 
 = 1.0.2 =
 * Bug fix for editing a validated field. Ensure proper type is selected and UI refresh is triggered. Props @fab4_33.
