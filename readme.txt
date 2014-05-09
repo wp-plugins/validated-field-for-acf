@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,10 +28,15 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.2.3 =
+* Support for globally bypassing Draft/Preview validation by setting `ACF_VF_DRAFTS` to `false`.
+* Support for bypassing Draft/Preview validation per field (defaults to validate).
+* Bug fixes: properly hide Draft spinner, cleaned up JavaScript.
+
 = 1.2.2 =
 * Properly include plugin version number on JavaScript enqueue for caching and PHP notices.
-* Use minified JavaScript unless `ACF_VF_DEBUG` is set to true.
-* Tested against WordPress 3.9.1
+* Use minified JavaScript unless `ACF_VF_DEBUG` is set to `true`.
+* Tested up to WordPress 3.9.1
 
 = 1.2.1 =
 * Show \'Validation Failed\' message in header as needed.
@@ -45,7 +50,7 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 * Better handling of required fields with validation
 
 = 1.1.1.1 =
-* Remove debug error_log() statement from v1.1.1
+* Remove debug `error_log()` statement from v1.1.1
 
 = 1.1.1 =
 * Clean up PHP to WordPress standards
@@ -59,17 +64,17 @@ Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugin
 * Use standard ACF error/messaging
 * Correctly process \"preview\" clicks, fixes error where the post would be published
 * Register CSS only in required locations
-* Properly apply subfield filters for \'acf/load_value/type=\', \'acf/update_value/type=\', \'acf/format_value/type=\' , \'acf/format_value_for_api/type=\', \'acf/load_field/type=\', \'acf/update_field/type=\'
-* Testing up to WordPress 3.9
+* Properly apply subfield filters for `acf/load_value/type=`, `acf/update_value/type=`, `acf/format_value/type=` , `acf/format_value_for_api/type=`, `acf/load_field/type=`, `acf/update_field/type=`
+* Tested up to WordPress 3.9
 
 = 1.0.7 =
 * Critical bug fix for selecting Validated Field type.
 
 = 1.0.6 =
-* Bug fix $sub_field properties not saving (use \"acf/create_field_options\" action).
+* Bug fix $sub_field properties not saving (use `acf/create_field_options` action).
 * Bug fix multiple Validated Fields in a set - correct to always use unique selectors.
 * Allow for unique query to be run on selected post statuses.
-* Set default statuses included in unique queries with filter of \"acf_vf/unique_statuses\".
+* Set default statuses included in unique queries with filter of `acf_vf/unique_statuses`.
 * Remove redundant table wrapper on validated fields.
 * Clean up potential strict PHP warnings.
 

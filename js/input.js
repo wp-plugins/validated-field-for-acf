@@ -1,7 +1,8 @@
 var vf = {
 	valid 		: false,
 	lastclick 	: false,
-	debug 		: false
+	debug 		: false,
+	drafts		: true,
 };
 
 (function($){
@@ -18,16 +19,15 @@ var vf = {
 	
 	$(document).on('submit', 'form#post', function(){
 		$('.field_type-validated_field').find('.acf-error-message').remove();
+		$('.field').removeClass('error');
 		$(this).siblings('#acfvf_message').remove();
-			
-		if (!vf.valid){
-			return do_validation(vf.lastclick);
-		} 
-		return true;
+		return vf.valid || do_validation(vf.lastclick);
 	});
 
 	function do_validation(clickObj){
-		if (!clickObj) return;
+		vf.valid = false;
+		if (!clickObj) return false;
+		if (!vf.drafts&&clickObj.attr('id')!='publish') return true;
 		fields = [];
 		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
@@ -50,7 +50,6 @@ var vf = {
 		// if there are no fields, don't make an ajax call.
 		if ( !fields.length ){
 			vf.valid = true;
-			$('#publish').click();
 			return true;
 		} else {
 			$.ajax({
@@ -58,6 +57,7 @@ var vf = {
 				data: {
 					action: 'validate_fields',
 					post_id: $("#post_ID").val(),
+					click_id: clickObj.attr('id'),
 					fields: fields
 				},
 				type: 'post',
@@ -72,7 +72,7 @@ var vf = {
 			return false;
 		}
 		
-		function ajax_returned(fields, clickId){
+		function ajax_returned(fields, clickObj){
 			vf.valid = false;
 			valid = true;
 			if (fields){
@@ -91,9 +91,9 @@ var vf = {
 				vf.valid = valid;
 			}
 			
-			clickObj.removeClass('button-primary-disabled').removeClass('disabled');
 			$('#ajax-loading').attr('style','');
-			$('#publishing-action .spinner').hide();
+			$('.submitbox .spinner').hide();
+			$('.submitbox .button').removeClass('button-primary-disabled').removeClass('disabled');
 			if ( !vf.valid ){
 				$('form#post').before('<div id="acfvf_message" class="error"><p>Validation Failed. See errors below.</p></div>');
 				$('.field_type-validated_field .acf-error-message').show();

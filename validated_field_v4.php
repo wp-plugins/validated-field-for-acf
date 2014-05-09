@@ -5,10 +5,7 @@ class acf_field_validated_field extends acf_field {
 	var $settings, 					// will hold info such as dir / path
 		$defaults, 					// will hold default field options
 		$sub_defaults, 				// will hold default sub field options
-		$unique_statuses = array(	// default posts statuses for unique query
-			'publish',
-			'future'
-		); 				
+		$debug;						// if true, don't use minified and confirm form submit 				
 
 	/*
 	*  __construct
@@ -23,18 +20,18 @@ class acf_field_validated_field extends acf_field {
 		$this->name 	= 'validated_field';
 		$this->label 	= __( 'Validated Field', 'acf_vf' );
 		$this->category	= __( 'Basic', 'acf');
-
-		// the default checked statuses for unique queries
-		$this->unique_statuses = apply_filters( 'acf_vf/unique_statuses', $this->unique_statuses );
+		$this->debug 	= defined( 'ACF_VF_DEBUG' )? ACF_VF_DEBUG : false;
+		$this->drafts 	= defined( 'ACF_VF_DRAFTS' )? ACF_VF_DRAFTS : true;
 
 		$this->defaults = array(
-			'read_only' => 'false',
-			'function' 	=> 'none',
-			'read_only' => 'false',
-			'pattern' 	=> '',
+			'read_only' => false,
 			'mask' 		=> '',
-			'unique' 	=> '',
-			'unique_statuses' => $this->unique_statuses,
+			'function' 	=> 'none',
+			'pattern' 	=> '',
+			'message' 	=>  __( 'Validation failed.', 'acf_vf' ),
+			'unique' 	=> 'non-unique',
+			'unique_statuses' => apply_filters( 'acf_vf/unique_statuses', array( 'publish', 'future' ) ),
+			'drafts'	=> true,
 		);
 
 		$this->sub_defaults = array(
@@ -59,6 +56,13 @@ class acf_field_validated_field extends acf_field {
 
 		add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
 		add_action( 'admin_head', array( &$this, 'input_admin_head' ) );
+	}
+
+	function setup_field( $field ){
+		// setup booleans, for compatibility
+		$field['read_only'] = ( false == $field['read_only'] || 'false' === $field['read_only'] )? false : true;
+		$field['drafts'] = ( false == $field['drafts'] || 'false' === $field['drafts'] )? false : true;
+		return array_merge( $this->defaults, $field );
 	}
 
 	function setup_sub_field( $field ){
@@ -117,6 +121,10 @@ class acf_field_validated_field extends acf_field {
 			0;
 		$post_type = get_post_type( $post_id ); 	// the type of the submitted post
 
+		$click_id =  isset( $_REQUEST['click_id'] )? // the ID of the clicked element, for drafts/publish
+			$_REQUEST['click_id'] : 
+			'publish';
+
 		// the validated field inputs to process
 		$inputs = ( isset( $_REQUEST['fields'] ) && is_array( $_REQUEST['fields'] ) )? 
 			$_REQUEST['fields'] : 
@@ -133,12 +141,14 @@ class acf_field_validated_field extends acf_field {
 			$index = $matches[3];					// the field index, if it is a repeater
 			$sub_key = $matches[4];					// the key for the sub field, if it is a repeater
 
-			$field = array_merge( $this->defaults, get_field_object( $key, $post_id ) ); // load the field config, set defaults
+			$field = $this->setup_field( get_field_object( $key, $post_id ) ); // load the field config, set defaults
+
 			$sub_field = $this->setup_sub_field( $field );
 
 			// if it's a repeater field, get the validated field so we can do meta queries...
 			if ( $is_repeater = ( 'repeater' == $field['type'] && $index != null ) ){
 				foreach ( $field['sub_fields'] as $repeater ){
+					$repeater = $this->setup_field( $repeater );
 					$sub_sub_field = $this->setup_sub_field( $repeater );
 					if ( $sub_key == $sub_sub_field['key'] ){
 						$parent_field = $field;		// we are going to map down a level, but track the top level field
@@ -152,6 +162,10 @@ class acf_field_validated_field extends acf_field {
 			$value = $input['value'];				// the submitted value
 			if ( $field['required'] && empty( $value ) ){
 				continue; 							// let the required field handle it
+			}
+
+			if ( $click_id != 'publish' && !$field['drafts'] ){
+				continue;							// we aren't publishing and we don't want to validate drafts
 			}
 			
 			$function = $field['function']; 		// what type of validation?
@@ -208,7 +222,7 @@ class acf_field_validated_field extends acf_field {
 			$unique = $field['unique'];
 			if ( $valid && ! empty( $unique ) && $unique != 'non-unique' ){
 				global $wpdb;
-				$status_in = "'".implode( "','", ( isset( $field['unique_statuses'] ) )? $field['unique_statuses'] : $this->unique_statuses) . "'";
+				$status_in = "'" . implode( "','", $field['unique_statuses'] ) . "'";
 				$sql_prefix = "SELECT meta_id, post_id, p.post_title FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id AND post_status IN ($status_in)";
 				switch ( $unique ){
 					case 'global': 
@@ -303,7 +317,7 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function create_options( $field ){
 		// defaults?
-		$field = array_merge( $this->defaults, $field );
+		$field = $this->setup_field( $field );
 
 		// key is needed in the field names to correctly save the data
 		$key = $field['name'];
@@ -326,13 +340,34 @@ class acf_field_validated_field extends acf_field {
 			do_action( 'acf/create_field', array(
 				'type'	=> 'radio',
 				'name'	=> 'fields['.$key.'][read_only]',
-				'value'	=> $field['read_only'],
+				'value'	=> ( false == $field['read_only'] || 'false' === $field['read_only'] )? 'false' : 'true',
 				'choices' => array(
 					'true'	=> 'Yes',
 					'false' => 'No',
 				),
 				'class' => 'horizontal'
 			));
+			?>
+			</td>
+		</tr>
+		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_readonly" id="field_option_<?php echo $html_key; ?>_drafts">
+			<td class="label"><label><?php _e("Validate Drafts/Preview?",'acf_vf'); ?> </label>
+			</td>
+			<td><?php 
+			do_action( 'acf/create_field', array(
+				'type'	=> 'radio',
+				'name'	=> 'fields['.$key.'][drafts]',
+				'value'	=> ( false == $field['drafts'] || 'false' === $field['drafts'] )? 'false' : 'true',
+				'choices' => array(
+					'true'	=> 'Yes',
+					'false'	=> 'No',
+				),
+				'class' => 'horizontal'
+			));
+
+			if ( ! $this->drafts ){
+				echo '<em>Warning: <code>ACF_VF_DRAFTS</code> has been set to <code>false</code> which overrides field level configurations.</em>';
+			}
 			?>
 			</td>
 		</tr>
@@ -594,15 +629,14 @@ class acf_field_validated_field extends acf_field {
 	*  @date	23/01/13
 	*/
 	function create_field( $field ){
-		global $post;
-    	global $pagenow;
+		global $post, $pagenow;
     	$is_new = $pagenow=='post-new.php';
-    	$field = array_merge( $this->defaults, $field );
+    	$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
 		?>
 		<div class="validated-field">
 			<?php
-			if ( $field['read_only'] === 'true' ){
+			if ( $field['read_only'] ){
 				?>
 				<p><?php 
 				ob_start();
@@ -654,18 +688,24 @@ class acf_field_validated_field extends acf_field {
 			'jquery-ui-core',
 			'jquery-ui-tabs',
 			'jquery-masking',
-			'acf-validated_field'
+			'acf-validated_field',
 		));
-		if ( defined( 'ACF_VF_DEBUG' ) && ACF_VF_DEBUG ){ 
+		if ( $this->debug ){ 
 			add_action( 'admin_head', array( &$this, 'debug_admin_head' ), 20 );
+		}
+		if ( ! $this->drafts ){ 
+			add_action( 'admin_head', array( &$this, 'drafts_admin_head' ), 20 );
 		}
 	}
 
-	function debug_admin_head(){ ?>
-		<script type="text/javascript">
-		vf.debug=true;
-		</script>
-	<?php
+	function debug_admin_head(){
+		// set debugging for javascript
+		echo '<script type="text/javascript">vf.debug=true;</script>';
+	}
+
+	function drafts_admin_head(){
+		// don't validate drafts for anything
+		echo '<script type="text/javascript">vf.drafts=false;</script>';
 	}
 
 	/*
@@ -728,7 +768,7 @@ class acf_field_validated_field extends acf_field {
 	*  @return	$value - the value to be saved in te database
 	*/
 	function load_value( $value, $post_id, $field ){
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		return apply_filters( 'acf/load_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
@@ -748,7 +788,7 @@ class acf_field_validated_field extends acf_field {
 	*  @return	$value - the modified value
 	*/
 	function update_value( $value, $post_id, $field ){
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		return apply_filters( 'acf/update_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
@@ -768,7 +808,7 @@ class acf_field_validated_field extends acf_field {
 	*  @return	$value	- the modified value
 	*/
 	function format_value( $value, $post_id, $field ){
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		return apply_filters('acf/format_value/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
@@ -788,7 +828,7 @@ class acf_field_validated_field extends acf_field {
 	*  @return	$value	- the modified value
 	*/
 	function format_value_for_api( $value, $post_id, $field ){
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		return apply_filters('acf/format_value_for_api/type='.$sub_field['type'], $value, $post_id, $sub_field );
 	}
 
@@ -807,7 +847,7 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function load_field( $field ){
 		global $currentpage;
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		$sub_field = apply_filters('acf/load_field/type='.$sub_field['type'], $sub_field);
 		$field['sub_field'] = $sub_field;
 		if ( $field['read_only'] && $currentpage == 'edit.php' ){
@@ -831,7 +871,7 @@ class acf_field_validated_field extends acf_field {
 	*  @return	$field - the modified field
 	*/
 	function update_field( $field, $post_id ){
-		$sub_field = $this->setup_sub_field( array_merge( $this->defaults, $field ) );
+		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field, $post_id );
 		$field['sub_field'] = $sub_field;
 		return $field;
