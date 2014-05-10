@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,7 +44,9 @@ Validated Field will appear as a new input type in the field group editor.
 
 == Changelog ==
 = 1.2.4 =
-* Fix PHP array index notice for non-repeater fields.
+* Finish text localization, include `es_ES` translation.
+* Pack and compress JavaScript.
+* Bug Fix: prevent PHP array index notice for non-repeater fields
 * Code formatting.
 
 = 1.2.3 =
