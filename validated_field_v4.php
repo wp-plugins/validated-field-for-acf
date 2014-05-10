@@ -119,6 +119,7 @@ class acf_field_validated_field extends acf_field {
 			array();
 
 		header( 'HTTP/1.1 200 OK' );							// be positive!
+		header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
 		$return_fields = array();								// JSON response to the client
 		foreach ( $inputs as $i=>$input ){						// loop through each field
 			// input defaults

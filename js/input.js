@@ -19,7 +19,7 @@ var vf = {
 	});
 
 	$(document).on('click', 'form#post input', function(){
-		vf.lastclick = $(event.srcElement);
+		vf.lastclick = $(this);
 	});
 	
 	$(document).on('submit', 'form#post', function(){
@@ -33,7 +33,7 @@ var vf = {
 		vf.valid = false;
 		if (!clickObj) return false;
 		if (!vf.drafts&&clickObj.attr('id')!='publish') return true;
-		fields = [];
+		var fields = [];
 		$('.validated-field:visible').each(function(){
 			parent = $(this).closest('.field');
 			
@@ -42,8 +42,7 @@ var vf = {
 				if (el.attr('name') && el.attr('name').indexOf('acfcloneindex')<0){
 					var field = { 
 							id: el.attr('name'),
-							value: el.val(),
-							valid: false,
+							value: el.val()
 					};
 					fields.push(field);
 				}
@@ -65,14 +64,13 @@ var vf = {
 					click_id: clickObj.attr('id'),
 					fields: fields
 				},
-				type: 'post',
+				type: 'POST',
 				dataType: 'json',
 				success: function(json){
 					ajax_returned(json, clickObj);				
-				}, 
-				error: function(jqXHR, exception){
+				}, error:function (xhr, ajaxOptions, thrownError){
 					ajax_returned(fields, clickObj);
-				}
+ 				}
 			});
 			return false;
 		}
