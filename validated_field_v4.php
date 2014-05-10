@@ -211,7 +211,7 @@ class acf_field_validated_field extends acf_field {
 			}
 				
 			$unique = $field['unique'];
-			if ( $valid && ! empty( $unique ) && $unique != 'non-unique' ){
+			if ( $valid && ! empty( $value ) && ! empty( $unique ) && $unique != 'non-unique' ){
 				global $wpdb;
 				$status_in = "'" . implode( "','", $field['unique_statuses'] ) . "'";
 				$sql_prefix = "SELECT meta_id, post_id, p.post_title FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id AND post_status IN ($status_in)";
