@@ -199,7 +199,7 @@ class acf_field_validated_field extends acf_field {
 							// check to see if this is our error or not.
 							if ( strpos( $error['file'], "validated_field_v4.php" ) && strpos( $error['file'], "eval()'d code" ) ){
 								preg_match( '/eval\\(\\)\'d code\\((\d+)\\)/', $error['file'], $matches );
-								$message = __( 'PHP Error: ', 'acf_vf' ) . $error['message'] . ', line ' . $matches[1] . '.';
+								$message = __( 'PHP Error', 'acf_vf' ) . ': ' . $error['message'] . ', line ' . $matches[1] . '.';
 								$valid = false;
 							} 
 						}
@@ -276,7 +276,7 @@ class acf_field_validated_field extends acf_field {
 							$conflicts .= "<a href='/wp-admin/post.php?post={$row->post_id}&action=edit' style='color:inherit;text-decoration:underline;'>{$row->post_title}</a>";
 							if ( $row !== end( $rows ) ) $conflicts.= ', ';
 						}
-						$message = __( 'The value', 'acf_vf' ) . " '{$value}' " . __( 'is already in use by', 'acf_vf' ) . " {$conflicts}.";
+						$message = __( 'The value', 'acf_vf' ) . " '$value' " . __( 'is already in use by', 'acf_vf' ) . " {$conflicts}.";
 						$valid = false;
 					}
 				}
@@ -333,8 +333,8 @@ class acf_field_validated_field extends acf_field {
 				'name'	=> 'fields['.$key.'][read_only]',
 				'value'	=> ( false == $field['read_only'] || 'false' === $field['read_only'] )? 'false' : 'true',
 				'choices' => array(
-					'true'	=> 'Yes',
-					'false' => 'No',
+					'true'	=> __( 'Yes', 'acf_vf' ),
+					'false' => __( 'No', 'acf_vf' ),
 				),
 				'class' => 'horizontal'
 			));
@@ -350,14 +350,18 @@ class acf_field_validated_field extends acf_field {
 				'name'	=> 'fields['.$key.'][drafts]',
 				'value'	=> ( false == $field['drafts'] || 'false' === $field['drafts'] )? 'false' : 'true',
 				'choices' => array(
-					'true'	=> 'Yes',
-					'false'	=> 'No',
+					'true'	=> __( 'Yes', 'acf_vf' ),
+					'false' => __( 'No', 'acf_vf' ),
 				),
 				'class' => 'horizontal'
 			));
 
 			if ( ! $this->drafts ){
-				echo '<em>Warning: <code>ACF_VF_DRAFTS</code> has been set to <code>false</code> which overrides field level configurations.</em>';
+				echo '<em>';
+				_e( 'Warning', 'acf_vf' );
+				echo ': <code>ACF_VF_DRAFTS</code> ';
+				_e( 'has been set to <code>false</code> which overrides field level configurations', 'acf_vf' );
+				echo '.</em>';
 			}
 			?>
 			</td>
@@ -409,7 +413,7 @@ class acf_field_validated_field extends acf_field {
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
 			<td class="label"><label><?php _e( 'Input Mask', 'acf_vf' ); ?> </label>
 			</td>
-			<td><?php _e( 'Use &#39;a&#39; to match &#39;A-Za-z&#39;, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ); ?> 
+			<td><?php _e( 'Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ); ?> 
 				<a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new"><?php _e( 'More info.', 'acf_vf' ); ?></a><br />
 				<?php 
 				do_action( 'acf/create_field', 
@@ -433,10 +437,10 @@ class acf_field_validated_field extends acf_field {
 						'name'	=> 'fields[' . $key . '][function]',
 						'value'	=> $field['function'],
 						'choices' => array(
-							'none'	=> 'None',
-							'regex' => 'Regular Expression',
-							//'sql'	=> 'SQL Query',
-							'php'	=> 'PHP Statement',
+							'none'	=> __( 'None', 'acf_vf' ),
+							'regex' => __( 'Regular Expression', 'acf_vf' ),
+							//'sql'	=> __( 'SQL Query', 'acf_vf' ),
+							'php'	=> __( 'PHP Statement', 'acf_vf' ),
 						),
 						'optgroup' => true,
 						'multiple' => '0',
@@ -458,11 +462,13 @@ class acf_field_validated_field extends acf_field {
 					<div class='validation-type php'>
 						<ul>
 							<li><?php _e( "Use any PHP code and return true or false. If nothing is returned it will evaluate to true.", 'acf_vf' ); ?></li>
-							<li><?php _e( 'Available variables', 'acf_vf' ) ?> - <b>$post_id</b>, <b>$post_type</b>, <b>$name</b>, <b>$value</b>, <b>$prev_value</b>, <b>&amp;$message</b> (<?php _e( 'returned to UI', 'acf_vf' ) ?>.</li>
+							<li><?php _e( 'Available variables', 'acf_vf' ); ?> - <b>$post_id</b>, <b>$post_type</b>, <b>$name</b>, <b>$value</b>, <b>$prev_value</b>, <b>&amp;$message</b> (<?php _e('returned to UI', 'acf_vf' ); ?>).</li>
 							<li><?php _e( 'Example', 'acf_vf' ); ?>: <code>if ( empty( $value ) ){ $message = sprint_f( $message, get_current_user()->user_login ); return false; }</code></li>
 						</ul>
 					</div>
-					<div class='validation-type sql'>SQL<br />
+					<div class='validation-type sql'>
+						<?php _e( 'SQL', 'acf_vf' ); ?>.
+						<br />
 					</div>
 				</div> 
 				<?php
@@ -505,10 +511,10 @@ class acf_field_validated_field extends acf_field {
 					'name'	=> 'fields[' . $key . '][unique]',
 					'value'	=> $field['unique'],
 					'choices' => array(
-						'non-unique'=> 'Non-Unique Value',
-						'global'	=> 'Unique Globally',
-						'post_type'	=> 'Unique For Post Type',
-						'post_key'	=> 'Unique For Post Type -> Key',
+						'non-unique'=> __( 'Non-Unique Value', 'acf_vf' ),
+						'global'	=> __( 'Unique Globally', 'acf_vf' ),
+						'post_type'	=> __( 'Unique For Post Type', 'acf_vf' ),
+						'post_key'	=> __( 'Unique For Post Type', 'acf_vf' ) . ' -&gt; ' . __( 'Key', 'acf_vf' ),
 					),
 					'optgroup'	=> false,
 					'multiple'	=> '0',
@@ -841,7 +847,7 @@ class acf_field_validated_field extends acf_field {
 		$sub_field = apply_filters( 'acf/load_field/type='.$sub_field['type'], $sub_field );
 		$field['sub_field'] = $sub_field;
 		if ( $field['read_only'] && $currentpage == 'edit.php' ){
-			$field['label'] = $field['label'].' <i class="fa fa-link" title="Read only"></i>';
+			$field['label'] = $field['label'].' <i class="fa fa-link" title="'. __('Read only', 'acf_vf' ) . '"></i>';
 		}
 		return $field;
 	}

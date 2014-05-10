@@ -1,3 +1,8 @@
+/*
+	Advanced Custom Fields: Validated Field
+	Justin Silver, http://justin.ag
+	DoubleSharp, http://doublesharp.com
+*/
 var vf = {
 	valid 		: false,
 	lastclick 	: false,

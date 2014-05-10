@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Validated Field for ACF\n"
-"POT-Creation-Date: 2014-05-09 17:16-0800\n"
-"PO-Revision-Date: 2014-05-09 17:16-0800\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2014-05-09 17:44-0800\n"
+"PO-Revision-Date: 2014-05-09 17:45-0800\n"
+"Last-Translator: Justin Silver <jsilver@doublesharp.com>\n"
 "Language-Team: DoubleSharp <info@doublesharp.com>\n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
-#: ../validated_field_v4.php:21 ../validated_field_v4.php:366
+#: ../validated_field_v4.php:21 ../validated_field_v4.php:370
 msgid "Validated Field"
 msgstr "Validado Campo"
 
@@ -30,8 +30,8 @@ msgid "Validation failed."
 msgstr "Error de validación."
 
 #: ../validated_field_v4.php:202
-msgid "PHP Error: "
-msgstr "PHP Error:"
+msgid "PHP Error"
+msgstr "PHP Error"
 
 #: ../validated_field_v4.php:209
 msgid "This field's validation is not properly configured."
@@ -53,48 +53,79 @@ msgstr "Disposición"
 msgid "Read Only?"
 msgstr "¿Sólo Lectura?"
 
+#: ../validated_field_v4.php:336 ../validated_field_v4.php:353
+msgid "Yes"
+msgstr "Sí"
+
+#: ../validated_field_v4.php:337 ../validated_field_v4.php:354
+msgid "No"
+msgstr "No"
+
 #: ../validated_field_v4.php:345
 msgid "Validate Drafts/Preview?"
 msgstr "¿Validar Borradores/Vista Previa?"
 
-#: ../validated_field_v4.php:378
+#: ../validated_field_v4.php:361
+msgid "Warning"
+msgstr "Advertencia"
+
+#: ../validated_field_v4.php:363
+msgid ""
+"has been set to <code>false</code> which overrides field level configurations"
+msgstr ""
+"se ha ajustado a <code>false</ code> que anula las configuraciones a nivel "
+"de campo"
+
+#: ../validated_field_v4.php:382
 msgid "Field Type"
 msgstr "Tipo de Campo"
 
-#: ../validated_field_v4.php:410
+#: ../validated_field_v4.php:414
 msgid "Input Mask"
 msgstr "Máscara de Entrada"
 
-#: ../validated_field_v4.php:412
+#: ../validated_field_v4.php:416
 msgid ""
-"Use &#39;a&#39; to match &#39;A-Za-z&#39;, &#39;9&#39; to match 0-9, and "
-"&#39;*&#39; to match any alphanumeric."
+"Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; "
+"to match any alphanumeric."
 msgstr ""
 "Utilice &#39;a&#39; para que coincida con &#39;A-Za-z&#39;, '&#39;9&#39; "
 "para que coincida con 0-9, y &#39;*&#39; para emparejar cualquier "
 "alfanumérico."
 
-#: ../validated_field_v4.php:413
+#: ../validated_field_v4.php:417
 msgid "More info."
 msgstr "Más info."
 
-#: ../validated_field_v4.php:426
+#: ../validated_field_v4.php:430
 msgid "Validation Function"
 msgstr "Función de Validación"
 
-#: ../validated_field_v4.php:428
+#: ../validated_field_v4.php:432
 msgid "How should the field be server side validated?"
 msgstr "¿Cómo debe el ámbito validada lado del servidor?"
 
-#: ../validated_field_v4.php:450
+#: ../validated_field_v4.php:440
+msgid "None"
+msgstr "Ninguno"
+
+#: ../validated_field_v4.php:441
+msgid "Regular Expression"
+msgstr "Expresión Regular"
+
+#: ../validated_field_v4.php:443
+msgid "PHP Statement"
+msgstr "Declaración de PHP"
+
+#: ../validated_field_v4.php:454
 msgid "Validation Pattern"
 msgstr "Patrón de Validación"
 
-#: ../validated_field_v4.php:455
+#: ../validated_field_v4.php:459
 msgid "Pattern match the input using"
 msgstr "Patrón coincide con la entrada utilizando"
 
-#: ../validated_field_v4.php:460
+#: ../validated_field_v4.php:464
 msgid ""
 "Use any PHP code and return true or false. If nothing is returned it will "
 "evaluate to true."
@@ -102,30 +133,57 @@ msgstr ""
 "Utilice cualquier código PHP y devolver verdadero o falso. Si no se devuelve "
 "nada que se evaluará como true."
 
-#: ../validated_field_v4.php:461
+#: ../validated_field_v4.php:465
 msgid "Available variables"
-msgstr "Variables disponibles"
+msgstr "variables disponibles"
 
-#: ../validated_field_v4.php:461
+#: ../validated_field_v4.php:465
 msgid "returned to UI"
 msgstr "regresado a la interfaz de usuario"
 
-#: ../validated_field_v4.php:462
+#: ../validated_field_v4.php:466
 msgid "Example"
 msgstr "Ejemplo"
 
-#: ../validated_field_v4.php:481
+#: ../validated_field_v4.php:470
+msgid "SQL"
+msgstr "SQL"
+
+#: ../validated_field_v4.php:487
 msgid "Error Message"
 msgstr "Mensaje de Error"
 
-#: ../validated_field_v4.php:495
+#: ../validated_field_v4.php:501
 msgid "Unique Value?"
 msgstr "¿Valor único?"
 
-#: ../validated_field_v4.php:499
+#: ../validated_field_v4.php:505
 msgid "Make sure this value is unique for..."
-msgstr "¿Asegúrese de que este valor es único para...?"
+msgstr "Asegúrese de que este valor es único para..."
 
-#: ../validated_field_v4.php:521
+#: ../validated_field_v4.php:514
+msgid "Non-Unique Value"
+msgstr "Valor no Unique"
+
+#: ../validated_field_v4.php:515
+msgid "Unique Globally"
+msgstr "Único Globalmente"
+
+#: ../validated_field_v4.php:516 ../validated_field_v4.php:517
+msgid "Unique For Post Type"
+msgstr "Unique Para Tipo Envío"
+
+#: ../validated_field_v4.php:517
+msgid "Key"
+msgstr "Clave"
+
+#: ../validated_field_v4.php:527
 msgid "Apply to which post statuses?"
 msgstr "¿Aplicar para que destinan los estados?"
+
+#: ../validated_field_v4.php:850
+msgid "Read only"
+msgstr "Sólo lectura"
+
+#~ msgid "Unique For Post Type -> Key"
+#~ msgstr "Unique Para Tipo Envío -> Clave"
