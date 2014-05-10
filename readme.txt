@@ -43,7 +43,7 @@ Validated Field will appear as a new input type in the field group editor.
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
-= 1.1.1.1 =
+= 1.2.5.1 =
 * Remove debug `error_log()` statement from v1.2.5.
 
 = 1.2.5 =
