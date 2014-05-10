@@ -22,5 +22,11 @@ function register_acf_validated_field(){
 	include_once 'validated_field_v4.php';
 }
 
-add_action('acf/register_fields', 'register_acf_validated_field');
+add_action( 'acf/register_fields', 'register_acf_validated_field' );
+
+function load_textdomain_acf_vf() {
+	error_log("trying");
+	load_plugin_textdomain( 'acf_vf', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
+add_action( 'plugins_loaded', 'load_textdomain_acf_vf' );
 endif;
