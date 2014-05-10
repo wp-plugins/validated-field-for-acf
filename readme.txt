@@ -43,6 +43,10 @@ Validated Field will appear as a new input type in the field group editor.
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.2.4 =
+* Fix PHP array index notice for non-repeater fields.
+* Code formatting.
+
 = 1.2.3 =
 * Support for globally bypassing Draft/Preview validation by setting `ACF_VF_DRAFTS` to `false`.
 * Support for bypassing Draft/Preview validation per field (defaults to validate).

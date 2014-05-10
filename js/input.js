@@ -56,7 +56,7 @@ var vf = {
 				url: ajaxurl,
 				data: {
 					action: 'validate_fields',
-					post_id: $("#post_ID").val(),
+					post_id: $('#post_ID').val(),
 					click_id: clickObj.attr('id'),
 					fields: fields
 				},

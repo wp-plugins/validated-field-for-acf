@@ -1,0 +1,131 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Validated Field for ACF\n"
+"POT-Creation-Date: 2014-05-09 17:16-0800\n"
+"PO-Revision-Date: 2014-05-09 17:16-0800\n"
+"Last-Translator: \n"
+"Language-Team: DoubleSharp <info@doublesharp.com>\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.5\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: ..\n"
+
+#: ../validated_field_v4.php:21 ../validated_field_v4.php:366
+msgid "Validated Field"
+msgstr "Validado Campo"
+
+#: ../validated_field_v4.php:22 ../validated_field_v4.php:324
+msgid "Basic"
+msgstr "Básico"
+
+#: ../validated_field_v4.php:31 ../validated_field_v4.php:287
+msgid "Validation failed."
+msgstr "Error de validación."
+
+#: ../validated_field_v4.php:202
+msgid "PHP Error: "
+msgstr "PHP Error:"
+
+#: ../validated_field_v4.php:209
+msgid "This field's validation is not properly configured."
+msgstr "La validación de este campo no está configurado correctamente."
+
+#: ../validated_field_v4.php:279
+msgid "The value"
+msgstr "El valor"
+
+#: ../validated_field_v4.php:279
+msgid "is already in use by"
+msgstr "ya está en uso por"
+
+#: ../validated_field_v4.php:323
+msgid "Layout"
+msgstr "Disposición"
+
+#: ../validated_field_v4.php:328
+msgid "Read Only?"
+msgstr "¿Sólo Lectura?"
+
+#: ../validated_field_v4.php:345
+msgid "Validate Drafts/Preview?"
+msgstr "¿Validar Borradores/Vista Previa?"
+
+#: ../validated_field_v4.php:378
+msgid "Field Type"
+msgstr "Tipo de Campo"
+
+#: ../validated_field_v4.php:410
+msgid "Input Mask"
+msgstr "Máscara de Entrada"
+
+#: ../validated_field_v4.php:412
+msgid ""
+"Use &#39;a&#39; to match &#39;A-Za-z&#39;, &#39;9&#39; to match 0-9, and "
+"&#39;*&#39; to match any alphanumeric."
+msgstr ""
+"Utilice &#39;a&#39; para que coincida con &#39;A-Za-z&#39;, '&#39;9&#39; "
+"para que coincida con 0-9, y &#39;*&#39; para emparejar cualquier "
+"alfanumérico."
+
+#: ../validated_field_v4.php:413
+msgid "More info."
+msgstr "Más info."
+
+#: ../validated_field_v4.php:426
+msgid "Validation Function"
+msgstr "Función de Validación"
+
+#: ../validated_field_v4.php:428
+msgid "How should the field be server side validated?"
+msgstr "¿Cómo debe el ámbito validada lado del servidor?"
+
+#: ../validated_field_v4.php:450
+msgid "Validation Pattern"
+msgstr "Patrón de Validación"
+
+#: ../validated_field_v4.php:455
+msgid "Pattern match the input using"
+msgstr "Patrón coincide con la entrada utilizando"
+
+#: ../validated_field_v4.php:460
+msgid ""
+"Use any PHP code and return true or false. If nothing is returned it will "
+"evaluate to true."
+msgstr ""
+"Utilice cualquier código PHP y devolver verdadero o falso. Si no se devuelve "
+"nada que se evaluará como true."
+
+#: ../validated_field_v4.php:461
+msgid "Available variables"
+msgstr "Variables disponibles"
+
+#: ../validated_field_v4.php:461
+msgid "returned to UI"
+msgstr "regresado a la interfaz de usuario"
+
+#: ../validated_field_v4.php:462
+msgid "Example"
+msgstr "Ejemplo"
+
+#: ../validated_field_v4.php:481
+msgid "Error Message"
+msgstr "Mensaje de Error"
+
+#: ../validated_field_v4.php:495
+msgid "Unique Value?"
+msgstr "¿Valor único?"
+
+#: ../validated_field_v4.php:499
+msgid "Make sure this value is unique for..."
+msgstr "¿Asegúrese de que este valor es único para...?"
+
+#: ../validated_field_v4.php:521
+msgid "Apply to which post statuses?"
+msgstr "¿Aplicar para que destinan los estados?"
