@@ -44,7 +44,9 @@ Validated Field will appear as a new input type in the field group editor.
 
 == Changelog ==
 = 1.2.4 =
-* Fix PHP array index notice for non-repeater fields.
+* Finish text localization, include `es_ES` translation.
+* Pack and compress validation javascript.
+* Bug Fix: prevent PHP array index notice for non-repeater fields.
 * Code formatting.
 
 = 1.2.3 =
