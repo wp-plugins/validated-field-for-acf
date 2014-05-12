@@ -157,7 +157,7 @@ class acf_field_validated_field extends acf_field {
 				continue;										// let the required field handle it
 			}
 
-			if ( $click_id != 'publish' && !$field['drafts'] ){
+			if ( $click_id != 'publish' && ! $field['drafts'] ){
 				continue;										// we aren't publishing and we don't want to validate drafts
 			}
 			
@@ -285,13 +285,13 @@ class acf_field_validated_field extends acf_field {
 
 			$return_fields[] = array(
 				'id'		=> $input['id'],
-				'message'	=> ! $valid? ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ) : '',
+				'message'	=> $valid? '' : ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ),
 				'valid'		=> $valid,
 			);
 		}
 		
 		// Send the results back to the browser as JSON
-		echo json_encode( $return_fields, ( $this->debug )? JSON_PRETTY_PRINT : 0 );
+		echo json_encode( $return_fields, $this->debug? JSON_PRETTY_PRINT : 0 );
 		die();
 	}
 
@@ -650,7 +650,7 @@ class acf_field_validated_field extends acf_field {
 			?>
 		</div>
 		<?php
-		if( !$is_new && isset( $sub_field['read_only'] ) && !$sub_field['read_only'] && ! empty( $field['mask'] ) ) { ?>
+		if( ! empty( $field['mask'] ) && ! $is_new && ! $sub_field['read_only'] ) { ?>
 			<script type="text/javascript">
 				jQuery(function($){
 				   $('[name="<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>"]').mask('<?php echo $field['mask']?>');
