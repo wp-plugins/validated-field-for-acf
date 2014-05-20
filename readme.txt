@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,10 @@ Validated Field will appear as a new input type in the field group editor.
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.2.7 =
+* Bug Fix: Post Preview fix when WordPress 'click' event triggers a 'submit' before the clicked element can be tracked by the plugin.
+* Added comments to unpacked JavaScript.
+
 = 1.2.6 =
 * Critical Bug Fix: Fix compatibility issues with Firefox.
 
