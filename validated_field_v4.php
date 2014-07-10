@@ -2,10 +2,14 @@
 if ( class_exists( 'acf_Field' ) && ! class_exists( 'acf_field_validated_field' ) ):
 class acf_field_validated_field extends acf_field {
 	// vars
-	var $settings,					// will hold info such as dir / path
+	var $slug,
+		$config,
+		$settings,					// will hold info such as dir / path
 		$defaults,					// will hold default field options
 		$sub_defaults,				// will hold default sub field options
-		$debug;						// if true, don't use minified and confirm form submit					
+		$debug,						// if true, don't use minified and confirm form submit					
+		$drafts,
+		$frontend;
 
 	/*
 	*  __construct
@@ -17,11 +21,41 @@ class acf_field_validated_field extends acf_field {
 	*/
 	function __construct(){
 		// vars
+		$this->slug 	= 'acf-validated-field';
+		$this->strbool 	= array( 'true' => true, 'false' => false );
+		$this->config 	= array(
+			'acf_vf_debug' => array(
+				'type' 		=> 'checkbox',
+				'default' 	=> 'false',
+				'label'  	=> __( 'Enable Debug', 'acf_vf' ),
+				'help' 		=> __( 'Check this box to turn on debugging for Validated Fields.', 'acf_vf' ),
+			),
+			'acf_vf_drafts' => array(
+				'type' 		=> 'checkbox',
+				'default' 	=> 'true',
+				'label'  	=> __( 'Enable Draft Validation', 'acf_vf' ),
+				'help' 		=> __( 'Check this box to enable Draft validation globally, or uncheck to allow it to be set per field.', 'acf_vf' ),
+			),
+			'acf_vf_frontend' => array(
+				'type' 		=> 'checkbox',
+				'default' 	=> 'false',
+				'label'  	=> __( 'Enable Front-End Validation', 'acf_vf' ),
+				'help'		=> __( 'Check this box to turn on validation for front-end forms created with', 'acf_vf' ) . ' <code>acf_form()</code>.',
+			),
+			'acf_vf_frontend_css' => array(
+				'type' 		=> 'checkbox',
+				'default' 	=> 'true',
+				'label'  	=> __( 'Enqueue Admin CSS on Front-End', 'acf_vf' ),
+				'help' 		=> __( 'Uncheck this box to turn off "colors-fresh" admin theme enqueued by', 'acf_vf' ) . ' <code>acf_form_head()</code>.',
+			),
+		);
 		$this->name		= 'validated_field';
-		$this->label	= __( 'Validated Field', 'acf_vf' );
+		$this->label 	= __( 'Validated Field', 'acf_vf' );
 		$this->category	= __( 'Basic', 'acf' );
-		$this->debug	= defined( 'ACF_VF_DEBUG' )? ACF_VF_DEBUG : false;
-		$this->drafts	= defined( 'ACF_VF_DRAFTS' )? ACF_VF_DRAFTS : true;
+		$this->drafts	= $this->option_value( 'acf_vf_drafts' );
+		$this->frontend = $this->option_value( 'acf_vf_frontend' );
+		$this->frontend_css = $this->option_value( 'acf_vf_frontend_css' );
+		$this->debug 	= $this->option_value( 'acf_vf_debug' );
 
 		$this->defaults = array(
 			'read_only' => false,
@@ -59,8 +93,75 @@ class acf_field_validated_field extends acf_field {
 			'version'	=> ACF_VF_VERSION,
 		);
 
-		add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
-		add_action( 'admin_head', array( &$this, 'input_admin_head' ) );
+		if ( is_admin() || $this->frontend ){ // admin actions
+			// ACF 5.0+ http://www.advancedcustomfields.com/resources/filters/acf-validate_value/
+			add_action( 'wp_ajax_validate_fields', array( &$this, 'ajax_validate_fields' ) );
+
+			add_action( $this->frontend? 'wp_head' : 'admin_head', array( &$this, 'input_admin_head' ) );
+			if ( ! is_admin() && $this->frontend ){
+				if ( ! $this->frontend_css ){
+					add_action( 'acf/input/admin_enqueue_scripts',  array( &$this, 'remove_acf_form_style' ) );
+				}
+
+				add_action( 'wp_ajax_nopriv_validate_fields', array( &$this, 'ajax_validate_fields' ) );
+				add_action( 'wp_head', array( &$this, 'ajaxurl' ), 1 );
+				add_action( 'wp_head', array( &$this, 'input_admin_enqueue_scripts' ), 1 );
+			}
+			if ( is_admin() ){
+				add_action( 'admin_init', array( &$this, 'admin_register_settings' ) );
+				add_action( 'admin_menu', array( &$this, 'admin_add_menu' ), 11 );
+			}
+		}
+	}
+
+	function option_value( $key ){
+		return ( false !== $option = get_option( $key ) )?
+			$option == $this->config[$key]['default'] :
+			$this->strbool[$this->config[$key]['default']];
+	}
+
+	function ajaxurl(){
+		?>
+		<script type="text/javascript">var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
+		<?php
+	}
+
+	function admin_add_menu(){
+		$page = add_submenu_page( 'edit.php?post_type=acf', __( 'Validated Field Settings', 'acf_vf' ), __( 'Validated Field Settings', 'acf_vf' ), 'manage_options', $this->slug, array( &$this,'admin_settings_page' ) );
+	}
+
+	function admin_register_settings(){
+		foreach ( $this->config as $key => $value ) {
+			register_setting( $this->slug, $key );
+		}
+	}
+
+	function admin_settings_page(){
+		?>
+		<div class="wrap">
+		<h2>Validated Field Settings</h2>
+		<form method="post" action="options.php">
+		    <?php settings_fields( $this->slug ); ?>
+		    <?php do_settings_sections( $this->slug ); ?>
+			<table class="form-table">
+			<?php foreach ( $this->config as $key => $value ) { ?>
+				<tr valign="top">
+					<th scope="row"><?php echo $value['label']; ?></th>
+					<td>
+						<input type="checkbox" id="<?php echo $key; ?>" name="<?php echo $key; ?>" value="<?php echo $value['default']; ?>" <?php if ( $this->option_value( $key ) ) echo 'checked'; ?>/>
+						<small><em><?php echo $value['help']; ?></em></small>
+					</td>
+				</tr>
+			<?php } ?>
+			</table>
+		    <?php submit_button(); ?>
+		</form>
+		</div>
+    	<?php
+	}
+
+	function remove_acf_form_style(){
+		wp_dequeue_style( array( 'colors-fresh' ) );
 	}
 
 	function setup_field( $field ){
@@ -108,6 +209,9 @@ class acf_field_validated_field extends acf_field {
 			$_REQUEST['post_id'] : 
 			0;
 		$post_type = get_post_type( $post_id );					// the type of the submitted post
+		$frontend = isset( $_REQUEST['frontend'] )?
+			$_REQUEST['frontend'] :
+			false;
 
 		$click_id =  isset( $_REQUEST['click_id'] )? 			// the ID of the clicked element, for drafts/publish
 			$_REQUEST['click_id'] : 
@@ -215,23 +319,36 @@ class acf_field_validated_field extends acf_field {
 			if ( $valid && ! empty( $value ) && ! empty( $unique ) && $unique != 'non-unique' ){
 				global $wpdb;
 				$status_in = "'" . implode( "','", $field['unique_statuses'] ) . "'";
-				$sql_prefix = "SELECT meta_id, post_id, p.post_title FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id AND post_status IN ($status_in)";
+
+				// WPML compatibility, get code list of active languages
+				if ( function_exists( 'icl_object_id' ) ){
+					$languages = $wpdb->get_results( "SELECT code FROM {$wpdb->prefix}icl_languages WHERE active = 1", ARRAY_A );
+					$wpml_ids = array();
+					foreach( $languages as $lang ){
+						$wpml_ids[] = (int) icl_object_id( $post_id, $post_type, true, $lang['code'] );
+					}
+					$post_ids = array_unique( $wpml_ids );
+				} else {
+					$post_ids = array( (int) $post_id );
+				}
+
+				$sql_prefix = "SELECT pm.meta_id AS meta_id, pm.post_id AS post_id, p.post_title AS post_title FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id AND p.post_status IN ($status_in)";
 				switch ( $unique ){
 					case 'global': 
 						// check to see if this value exists anywhere in the postmeta table
 						$sql = $wpdb->prepare( 
-							"{$sql_prefix} AND post_id != %d WHERE meta_value = %s", 
-							$post_id, 
-							$value
+							"{$sql_prefix} AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )",
+							$value,
+							'%"' . like_escape( $value ) . '"%'
 						);
 						break;
 					case 'post_type':
 						// check to see if this value exists in the postmeta table with this $post_id
 						$sql = $wpdb->prepare( 
-							"{$sql_prefix} AND p.post_type = %s AND post_id != %d WHERE meta_value = %s", 
-							$post_type, 
-							$post_id, 
-							$value 
+							"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )", 
+							$post_type,
+							$value,
+							'%"' . like_escape( $value ) . '"%'
 						);
 						break;
 					case 'post_key':
@@ -239,24 +356,22 @@ class acf_field_validated_field extends acf_field {
 						if ( $is_repeater ){
 							$this_key = $parent_field['name'] . '_' . $index . '_' . $field['name'];
 							$meta_key = $parent_field['name'] . '_%_' . $field['name'];
-							$sql = "{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id = %d AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id != %d AND meta_key LIKE %s ) ) AND meta_value = %s";
-							$sql = $wpdb->prepare( 
-								"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id = %d AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id != %d AND meta_key LIKE %s ) ) AND meta_value = %s", 
-								$post_type, 
-								$post_id, 
-								$this_key, 
-								$meta_key, 
-								$post_id, 
-								$meta_key, 
-								$value 
+							$sql = $wpdb->prepare(
+								"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id NOT IN ([NOT_IN]) AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id NOT IN ([NOT_IN]) AND meta_key LIKE %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$post_type,
+								$this_key,
+								$meta_key,
+								$meta_key,
+								$value,
+								'%"' . like_escape( $value ) . '"%'
 							);
 						} else {
 							$sql = $wpdb->prepare( 
-								"{$sql_prefix} AND p.post_type = %s AND post_id != %d WHERE meta_key = %s AND meta_value = %s", 
-								$post_type, 
-								$post_id, 
-								$field['name'], 
-								$value 
+								"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$post_type,
+								$field['name'],
+								$value,
+								'%"' . like_escape( $value ) . '"%'
 							);
 						}
 						break;
@@ -268,13 +383,18 @@ class acf_field_validated_field extends acf_field {
 
 				// Only run if we hit a condition above
 				if ( ! empty( $sql ) ){
+
+					// Update the [NOT_IN] values
+					$sql = $this->prepare_not_in( $sql, $post_ids );
+
 					// Execute the SQL
 					$rows = $wpdb->get_results( $sql );
 					if ( count( $rows ) ){
 						// We got some matches, but there might be more than one so we need to concatenate the collisions
 						$conflicts = "";
 						foreach ( $rows as $row ){
-							$conflicts .= "<a href='/wp-admin/post.php?post={$row->post_id}&action=edit' style='color:inherit;text-decoration:underline;'>{$row->post_title}</a>";
+							$permalink = ( $frontend )? get_permalink( $row->post_id ) : "/wp-admin/post.php?post={$row->post_id}&action=edit";
+							$conflicts.= "<a href='{$permalink}' style='color:inherit;text-decoration:underline;'>{$row->post_title}</a>";
 							if ( $row !== end( $rows ) ) $conflicts.= ', ';
 						}
 						$message = __( 'The value', 'acf_vf' ) . " '$value' " . __( 'is already in use by', 'acf_vf' ) . " {$conflicts}.";
@@ -285,7 +405,7 @@ class acf_field_validated_field extends acf_field {
 
 			$return_fields[] = array(
 				'id'		=> $input['id'],
-				'message'	=> $valid? '' : ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ),
+				'message'	=> true === $valid? '' : ! empty( $message )? htmlentities( $message, ENT_NOQUOTES, 'UTF-8' ) : __( 'Validation failed.', 'acf_vf' ),
 				'valid'		=> $valid,
 			);
 		}
@@ -293,6 +413,19 @@ class acf_field_validated_field extends acf_field {
 		// Send the results back to the browser as JSON
 		echo json_encode( $return_fields, $this->debug? JSON_PRETTY_PRINT : 0 );
 		die();
+	}
+
+	private function prepare_not_in( $sql, $post_ids ){
+		global $wpdb;
+		$not_in_count = substr_count( $sql, '[NOT_IN]' );
+		if ( $not_in_count > 0 ){
+			$args = array( str_replace( '[NOT_IN]', implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) ), str_replace( '%', '%%', $sql ) ) );
+			for ( $i=0; $i < substr_count( $sql, '[NOT_IN]' ); $i++ ) { 
+				$args = array_merge( $args, $post_ids );
+			}
+			$sql = call_user_func_array( array( $wpdb, 'prepare' ), $args );
+		}
+		return $sql;
 	}
 
 	/*
@@ -650,7 +783,7 @@ class acf_field_validated_field extends acf_field {
 			?>
 		</div>
 		<?php
-		if( !$is_new && isset( $sub_field['read_only'] ) && !$sub_field['read_only'] && ! empty( $field['mask'] ) ) { ?>
+		if( ! $is_new && isset( $field['read_only'] ) && ! $field['read_only'] && ! empty( $field['mask'] ) ) { ?>
 			<script type="text/javascript">
 				jQuery(function($){
 				   $('[name="<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>"]').mask('<?php echo $field['mask']?>');
@@ -674,7 +807,7 @@ class acf_field_validated_field extends acf_field {
 	function input_admin_enqueue_scripts(){
 		// register acf scripts
 		$min = ( ! $this->debug )? '.min' : '';
-		wp_register_script( 'acf-validated_field', $this->settings['dir'] . "js/input{$min}.js", array( 'acf-input' ), $this->settings['version'] );
+		wp_register_script( 'acf-validated-field', $this->settings['dir'] . "js/input{$min}.js", array(), $this->settings['version'] );
 		wp_register_script( 'jquery-masking', $this->settings['dir'] . "js/jquery.maskedinput{$min}.js", array( 'jquery' ), $this->settings['version']);
 		wp_register_script( 'sh-core', $this->settings['dir'] . 'js/shCore.js', array( 'acf-input' ), $this->settings['version'] );
 		wp_register_script( 'sh-autoloader', $this->settings['dir'] . 'js/shAutoloader.js', array( 'sh-core' ), $this->settings['version']);
@@ -685,24 +818,32 @@ class acf_field_validated_field extends acf_field {
 			'jquery-ui-core',
 			'jquery-ui-tabs',
 			'jquery-masking',
-			'acf-validated_field',
+			'acf-validated-field',
 		));
 		if ( $this->debug ){ 
-			add_action( 'admin_head', array( &$this, 'debug_admin_head' ), 20 );
+			add_action( $this->frontend? 'wp_head' : 'admin_head', array( &$this, 'debug_head' ), 20 );
 		}
 		if ( ! $this->drafts ){ 
-			add_action( 'admin_head', array( &$this, 'drafts_admin_head' ), 20 );
+			add_action( $this->frontend? 'wp_head' : 'admin_head', array( &$this, 'drafts_head' ), 20 );
+		}
+		if ( $this->frontend && ! is_admin() ){
+			add_action( 'wp_head', array( &$this, 'frontend_head' ), 20 );
 		}
 	}
 
-	function debug_admin_head(){
+	function debug_head(){
 		// set debugging for javascript
 		echo '<script type="text/javascript">vf.debug=true;</script>';
 	}
 
-	function drafts_admin_head(){
+	function drafts_head(){
 		// don't validate drafts for anything
 		echo '<script type="text/javascript">vf.drafts=false;</script>';
+	}
+
+	function frontend_head(){
+		// indicate that this is validating the front end
+		echo '<script type="text/javascript">vf.frontend=true;</script>';
 	}
 
 	/*
