@@ -1039,6 +1039,20 @@ PHP;
 		global $currentpage;
 		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
 		$sub_field = apply_filters( 'acf/load_field/type='.$sub_field['type'], $sub_field );
+
+		// The relationship field gets settings from the sub_field so we need to return it since it effectively displays through this method.
+		if ( isset( $_POST['action'] ) && $_POST['action'] == 'acf/fields/relationship/query_posts' ){
+			// Bug fix, if the taxonomy is "all" just omit it from the filter.
+			if ( $sub_field['taxonomy'][0] == 'all' ){
+				unset( $sub_field['taxonomy']);
+			}
+			return $sub_field;
+		}
+
+		if ( $field['read_only'] && $currentpage == 'edit.php' ){
+			$field['label'] = $field['label'].' <i class="fa fa-link" title="'. __('Read only', 'acf_vf' ) . '"></i>';
+		}
+
 		$field['sub_field'] = $sub_field;
 		if ( $field['read_only'] && $currentpage == 'edit.php' ){
 			$field['label'] = $field['label'].' <i class="fa fa-link" title="'. __('Read only', 'acf_vf' ) . '"></i>';

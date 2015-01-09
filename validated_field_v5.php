@@ -442,6 +442,7 @@ INNERPHP;
 endif; // function_exists
 \$valid = $function_name( array( 'post_id'=>'$post_id', 'post_type'=>'$post_type', 'this_key'=>'$this_key', 'value'=>'$value', 'prev_value'=>'$prev_value', 'inputs'=>\$input_fields ), \$message );
 PHP;
+
 					if ( true !== eval( $php ) ){			// run the eval() in the eval()
 						$error = error_get_last();			// get the error from the eval() on failure
 						// check to see if this is our error or not.
@@ -971,6 +972,7 @@ PHP;
 	*  @return	n/a
 	*/
 	function input_admin_footer(){
+		wp_deregister_style( 'font-awesome' );
 		wp_enqueue_style( 'font-awesome', plugins_url( 'css/font-awesome/css/font-awesome.min.css', __FILE__ ), array(), '4.2.0' ); 
 		wp_enqueue_style( 'acf-validated_field', plugins_url( 'css/input.css', __FILE__ ), array(), ACF_VF_VERSION ); 
 	}
@@ -1088,6 +1090,16 @@ PHP;
 		$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
 		$sub_field = apply_filters( 'acf/load_field/type='.$sub_field['type'], $sub_field );
+
+		// The relationship field gets settings from the sub_field so we need to return it since it effectively displays through this method.
+		if ( isset( $_POST['action'] ) && $_POST['action'] == 'acf/fields/relationship/query' ){
+			// Bug fix, if the taxonomy is "all" just omit it from the filter.
+			if ( $sub_field['taxonomy'][0] == 'all' ){
+				unset( $sub_field['taxonomy']);
+			}
+			return $sub_field;
+		}
+
 		$field['sub_field'] = $sub_field;
 		if ( $field['read_only'] && $field['read_only'] != 'false' && get_post_type() != 'acf-field-group' ){
 			$field['label'] .= ' <i class="fa fa-ban" style="color:red;" title="'. __( 'Read only', 'acf_vf' ) . '"></i>';
