@@ -58,7 +58,7 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Upgraded jQuery Masked Input plugin to version 1.4.
 * Better support for Relationship field settings - only load sub field when the action is `acf/fields/relationship/query_posts` (ACF4) or `acf/fields/relationship/query` (ACF5).
 * For ACF 5+ only:
- * The new ['acf/validate_value`](http://www.advancedcustomfields.com/resources/acf-validate_value/) filter is used for better compatibility and performance.
+ * The new [`acf/validate_value`](http://www.advancedcustomfields.com/resources/acf-validate_value/) filter is used for better compatibility and performance.
  * Get rid of inline JavaScript in the WordPress Admin and leverage ACF JavaScript events.
 * For ACF 4 only:
  * Compatibility with tabbed layouts (natively supported in ACF 5)
