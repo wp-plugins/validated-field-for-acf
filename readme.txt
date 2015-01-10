@@ -46,6 +46,7 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+
 = 1.4 = 
 * Support for Advanced Custom Fields 5.0.
 * The `$inputs` variable is now available using and index of `meta_key` and returning an array with the values "field", "value", and "prev_value".
@@ -63,8 +64,10 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * For ACF 4 only:
  * Compatibility with tabbed layouts (natively supported in ACF 5)
 
+
 = 1.3.1 =
 * Bug Fix: Apply input masking to fields for new posts, not just editing existing ones.
+
 
 = 1.3 =
 * Support front end validation using [`acf_form()`](http://www.advancedcustomfields.com/resources/functions/acf_form/).
@@ -78,15 +81,19 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Fix conflicts with ACF client side validation (required fields, etc).
 * Fix reference to `$sub_field['read_only']` with `$field['read_only']` for jQuery masking, props @johnny_br.
 
+
 = 1.2.7 =
 * Bug Fix: Post Preview fix when WordPress 'click' event triggers a 'submit' before the clicked element can be tracked by the plugin.
 * Added comments to unpacked JavaScript.
 
+
 = 1.2.6 =
 * Critical Bug Fix: Fix compatibility issues with Firefox.
 
+
 = 1.2.5.1 =
 * Remove debug `error_log()` statement from v1.2.5.
+
 
 = 1.2.5 =
 * Finish text localization, include `es_ES` translation.
@@ -94,20 +101,24 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Bug Fix: prevent PHP array index notice for non-repeater fields.
 * Code formatting.
 
+
 = 1.2.3 =
 * Support for globally bypassing Draft/Preview validation by setting `ACF_VF_DRAFTS` to `false`.
 * Support for bypassing Draft/Preview validation per field (defaults to validate).
 * Bug fixes: properly hide Draft spinner, cleaned up JavaScript.
+
 
 = 1.2.2 =
 * Properly include plugin version number on JavaScript enqueue for caching and PHP notices.
 * Use minified JavaScript unless `ACF_VF_DEBUG` is set to `true`.
 * Tested up to WordPress 3.9.1
 
+
 = 1.2.1 =
 * Show 'Validation Failed' message in header as needed.
 * Mark form as dirty when input element values change.
 * Fix return of `$message` from field configuration to UI.
+
 
 = 1.2 =
 * Support for [Repeater Field](http://www.advancedcustomfields.com/add-ons/repeater-field/) Validated Fields.
@@ -115,8 +126,10 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Clean up variable names, more code standardization.
 * Better handling of required fields with validation.
 
+
 = 1.1.1.1 =
 * Remove debug `error_log()` statement from v1.1.1.
+
 
 = 1.1.1 =
 * Clean up PHP to WordPress standards.
@@ -124,6 +137,7 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Use defaults to prevent invalid array indexes.
 * Update JavaScript for UI Errors.
 * More localization prep for text.
+
 
 = 1.1 = 
 * Add Read-only functionality (beta).
@@ -133,8 +147,10 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Properly apply subfield filters for `acf/load_value/type=`, `acf/update_value/type=`, `acf/format_value/type=`, `acf/format_value_for_api/type=`, `acf/load_field/type=`, `acf/update_field/type=`.
 * Tested up to WordPress 3.9.
 
+
 = 1.0.7 =
 * Critical bug fix for selecting Validated Field type.
+
 
 = 1.0.6 =
 * Bug fix `$sub_field` properties not saving (use `acf/create_field_options` action).
@@ -144,27 +160,34 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Remove redundant table wrapper on validated fields.
 * Clean up potential strict PHP warnings.
 
+
 = 1.0.5 =
 * Hide spinner for update if a validation error is encountered.
 * Allow for uniqueness queries to apply to only published or all post statuses.
 * Clean up debugging code writing to the error log for regex validations.
 
+
 = 1.0.4 =
 * Fix javascript error when including ace.js, props @nikademo.
 * Fix "Undefined index" PHP notice, props @ikivanov.
 
+
 = 1.0.3 =
 * Bug fix for unique field values per `post_type`. Props @ikivanov.
+
 
 = 1.0.2 =
 * Bug fix for editing a validated field. Ensure proper type is selected and UI refresh is triggered. Props @fab4_33.
 
+
 = 1.0.1 =
 * Clean up strict warnings
+
 
 = 1.0 =
 * Update for compatibility with Advanced Custom Fields 4+
 * Implement ace.js for syntax highlighting
+
 
 = 0.1 =
 * Initial version.
