@@ -366,7 +366,8 @@ class acf_field_validated_field extends acf_field {
 
 		// if it's a repeater field, get the validated field so we can do meta queries...
 		if ( $is_repeater = ( isset( $parent_field ) && 'repeater' == $parent_field['type'] ) ){
-			$index = explode( '][', $input )[1];
+			$index = explode( '][', $input );
+			$index = $index[1];
 		}
 		
 		// the wrapped field
