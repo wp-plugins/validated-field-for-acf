@@ -10,7 +10,7 @@
 
 		var $field = ($el.data('type') == 'validated_field')? 
 			$el :
-			$el.closest('.field_type-validated_field');
+			$el.closest('.acf-field');
 
 		if ( $field.data('validation-setup') == 'true' )
 			return;
@@ -51,7 +51,7 @@
 			var editor = $field.find('.ace-editor').data('editor');
 			var val = editor.getValue();
 			if ($(this).val()=='none'){
-				$field.find('[data-name="pattern"], [data-name="message"]').hide(300);
+				$field.filter('[data-name="pattern"], [data-name="message"]').hide(300);
 			} else {
 				if ($(this).val()=='php'){
 					if (val.indexOf(sPhp)!=0){
@@ -79,7 +79,7 @@
 				}
 				editor.resize();
 				editor.gotoLine(1, 1, false);
-				$field.find('[data-name="pattern"], [data-name="message"]').show(300);
+				$field.filter('[data-name="pattern"], [data-name="message"]').show(300);
 			}
 		});
 		$field.find('.validation-function').trigger('change');
@@ -89,7 +89,9 @@
 			var val = $(this).val();
 			if (val=='non-unique'||val=='') { unqa.hide(300); } else { unqa.show(300); }
 		});
-		$field.find('.validation-unique').trigger('change');
+
+		// get the ui state in order, make sure the sub field type is set up
+		$field.find('.validation-unique, .sub-field-settings select').trigger('change');
 
 		$field.data('validation-setup', 'true');
 	});

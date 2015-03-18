@@ -373,7 +373,7 @@ PHP;
 						$sql = $wpdb->prepare( 
 							"{$sql_prefix} AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )",
 							$value,
-							'%"' . like_escape( $value ) . '"%'
+							'%"' . $wpdb->esc_like( $value ) . '"%'
 						);
 						break;
 					case 'post_type':
@@ -382,7 +382,7 @@ PHP;
 							"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )", 
 							$post_type,
 							$value,
-							'%"' . like_escape( $value ) . '"%'
+							'%"' . $wpdb->esc_like( $value ) . '"%'
 						);
 						break;
 					case 'post_key':
@@ -397,7 +397,7 @@ PHP;
 								$meta_key,
 								$meta_key,
 								$value,
-								'%"' . like_escape( $value ) . '"%'
+								'%"' . $wpdb->esc_like( $value ) . '"%'
 							);
 						} else {
 							$sql = $wpdb->prepare( 
@@ -405,7 +405,7 @@ PHP;
 								$post_type,
 								$field['name'],
 								$value,
-								'%"' . like_escape( $value ) . '"%'
+								'%"' . $wpdb->esc_like( $value ) . '"%'
 							);
 						}
 						break;
@@ -756,7 +756,7 @@ PHP;
 								editor.setValue(sPhp +'\n' + val);
 							}
 							editor.getSession().setMode("ace/mode/php");
-							jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','200px');
+							jQuery("#acf-field-<?php echo $html_key; ?>_editor").css('height','420px');
 
 							editor.setOptions({
 								enableBasicAutocompletion: true,
@@ -1037,7 +1037,8 @@ PHP;
 	*/
 	function load_field( $field ){
 		global $currentpage;
-		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
+		$field = $this->setup_field( $field );
+		$sub_field = $this->setup_sub_field( $field );
 		$sub_field = apply_filters( 'acf/load_field/type='.$sub_field['type'], $sub_field );
 
 		// The relationship field gets settings from the sub_field so we need to return it since it effectively displays through this method.
@@ -1049,13 +1050,9 @@ PHP;
 			return $sub_field;
 		}
 
-		if ( $field['read_only'] && $currentpage == 'edit.php' ){
-			$field['label'] = $field['label'].' <i class="fa fa-link" title="'. __('Read only', 'acf_vf' ) . '"></i>';
-		}
-
 		$field['sub_field'] = $sub_field;
 		if ( $field['read_only'] && $currentpage == 'edit.php' ){
-			$field['label'] = $field['label'].' <i class="fa fa-link" title="'. __('Read only', 'acf_vf' ) . '"></i>';
+			$field['label'] .= ' <i class="fa fa-ban" style="color:red;" title="'. __( 'Read only', 'acf_vf' ) . '"></i>';
 		}
 		return $field;
 	}

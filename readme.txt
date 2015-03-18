@@ -46,6 +46,16 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.5 =
+* Increase height of ACE editor.
+* Improve jQuery selectors for WordPress Admin functionality.
+* Replace deprecated `like_escape()` function with `$wpdb->esc_like()`.
+* Update read-only icon on edit screens.
+* Bug fix: Undefined array index errors.
+* Bug fix: Repeater field unique validation for post type and post type + key.
+* Bug fix: WPML field unique validation for post type and post type + key.
+* Bug fix: UI display controls for pattern/ACE editor.
+
 
 = 1.4 = 
 * Support for Advanced Custom Fields 5.0.

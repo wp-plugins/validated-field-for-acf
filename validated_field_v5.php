@@ -280,11 +280,16 @@ class acf_field_validated_field extends acf_field {
 			$field['sub_field'] :	// already set up
 			array();				// create it
 		// mask the sub field as the parent by giving it the same key values
-		foreach( array( 'key', 'name', '_name', 'id', 'value', 'field_group' ) as $key ){
+		$copy_fields = array( 'key', 'prefix', 'value', '_name', 'wrapper', 'parent', 'field_group', 'conditional_logic', 'class', 'ID', 'readonly', 'disabled', 'class', 'menu_order' );
+		foreach( $copy_fields as $key ){
 			$sub_field[$key] = isset( $field[$key] )? $field[$key] : '';
 		}
-		$sub_field['key'] = $field['key'];
-		$sub_field['prefix'] = 'acf';
+
+		// these fields need some special formatting
+		$sub_field['_input'] = $sub_field['prefix'].'['.$sub_field['key'].']';
+		$sub_field['name'] = $sub_field['prefix'].'['.$sub_field['key'].']';
+		$sub_field['id'] = str_replace( ']', '',str_replace( '[', '-', $sub_field['name'] ) );
+		
 		// make sure all the defaults are set
 		return array_merge( $this->sub_defaults, $sub_field );
 	}
@@ -347,6 +352,7 @@ class acf_field_validated_field extends acf_field {
 		if ( ! $valid )
 			return $valid;
 
+		// get ID of the submit post or cpt
 		$post_id = $_POST['acf']['post_ID'];
 
 		$post_type = get_post_type( $post_id );				// the type of the submitted post
@@ -354,30 +360,25 @@ class acf_field_validated_field extends acf_field {
 			$_REQUEST['acf']['frontend'] :
 			false;
 
-		// if it's a repeater field, get the validated field so we can do meta queries...
-		if ( $is_repeater = ( 'repeater' == $field['type'] && $index ) ){
-			foreach ( $field['sub_fields'] as $repeater ){
-				$repeater = $this->setup_field( $repeater );
-				$sub_field = $this->setup_sub_field( $repeater );
-				if ( $sub_key == $sub_field['key'] ){
-					$parent_field = $field;					// we are going to map down a level, but track the top level field
-					$field = $repeater;						// the '$field' should be the Validated Field
-					break;
-				}
-				$sub_field = false;							// in case it isn't the right one
-			}
-		} else {
-			// the wrapped field
-			$sub_field = $this->setup_sub_field( $field );
+		if ( !empty( $field['parent'] ) ){
+			$parent_field = acf_get_field( $field['parent'] );	
 		}
 
+		// if it's a repeater field, get the validated field so we can do meta queries...
+		if ( $is_repeater = ( isset( $parent_field ) && 'repeater' == $parent_field['type'] ) ){
+			$index = explode( '][', $input )[1];
+		}
+		
+		// the wrapped field
+		$sub_field = $this->setup_sub_field( $field );
+		
 		//$value = $input['value'];							// the submitted value
 		if ( $field['required'] && empty( $value ) ){
-			return $valid;										// let the required field handle it
+			return $valid;									// let the required field handle it
 		}
 
-		if ( $click_id != 'publish' && !$field['drafts'] ){
-			return $valid;										// we aren't publishing and we don't want to validate drafts
+		if ( !$field['drafts'] ){
+			return $valid;									// we aren't publishing and we don't want to validate drafts
 		}
 		
 		$function = $field['function'];						// what type of validation?
@@ -410,8 +411,7 @@ class acf_field_validated_field extends acf_field {
 						}
 					}
 
-					// the default message
-					$message = $field['message'];
+					$message = $field['message'];			// the default message
 
 					// not yet saved to the database, so this is the previous value still
 					$prev_value = get_post_meta( $post_id, $this_key, true );
@@ -426,6 +426,7 @@ class acf_field_validated_field extends acf_field {
 					$value = addslashes( $value );
 					$prev_value = addslashes( $prev_value );
 
+					// this must be left aligned as it contains an inner HEREDOC
 					$php = <<<PHP
 if ( ! function_exists( '$function_name' ) ):
 function $function_name( \$args, &\$message ){
@@ -482,18 +483,19 @@ PHP;
 				case 'global': 
 					// check to see if this value exists anywhere in the postmeta table
 					$sql = $wpdb->prepare( 
-						"{$sql_prefix} AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )",
+						"{$sql_prefix} AND post_id NOT IN ([IN_NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )",
 						$value,
-						'%"' . like_escape( $value ) . '"%'
+						'%"' . wpdb::esc_like( $value ) . '"%'
 					);
 					break;
 				case 'post_type':
 					// check to see if this value exists in the postmeta table with this $post_id
 					$sql = $wpdb->prepare( 
-						"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )", 
+						"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id IN ([IN_NOT_IN]) AND meta_key != %s ) OR post_id NOT IN ([IN_NOT_IN]) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
 						$post_type,
+						$field['name'],
 						$value,
-						'%"' . like_escape( $value ) . '"%'
+						'%"' . $wpdb->esc_like( $value ) . '"%'
 					);
 					break;
 				case 'post_key':
@@ -502,21 +504,21 @@ PHP;
 						$this_key = $parent_field['name'] . '_' . $index . '_' . $field['name'];
 						$meta_key = $parent_field['name'] . '_%_' . $field['name'];
 						$sql = $wpdb->prepare(
-							"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id NOT IN ([NOT_IN]) AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id NOT IN ([NOT_IN]) AND meta_key LIKE %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
+							"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id IN ([IN_NOT_IN]) AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id NOT IN ([IN_NOT_IN]) AND meta_key LIKE %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
 							$post_type,
 							$this_key,
 							$meta_key,
 							$meta_key,
 							$value,
-							'%"' . like_escape( $value ) . '"%'
+							'%"' . $wpdb->esc_like( $value ) . '"%'
 						);
 					} else {
 						$sql = $wpdb->prepare( 
-							"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
+							"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([IN_NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
 							$post_type,
 							$field['name'],
 							$value,
-							'%"' . like_escape( $value ) . '"%'
+							'%"' . $wpdb->esc_like( $value ) . '"%'
 						);
 					}
 					break;
@@ -529,8 +531,8 @@ PHP;
 			// Only run if we hit a condition above
 			if ( ! empty( $sql ) ){
 
-				// Update the [NOT_IN] values
-				$sql = $this->prepare_not_in( $sql, $post_ids );
+				// Update the [IN_NOT_IN] values
+				$sql = $this->prepare_in_and_not_in( $sql, $post_ids );
 
 				// Execute the SQL
 				$rows = $wpdb->get_results( $sql );
@@ -554,12 +556,12 @@ PHP;
 		return $valid;
 	}
 
-	private function prepare_not_in( $sql, $post_ids ){
+	private function prepare_in_and_not_in( $sql, $post_ids ){
 		global $wpdb;
-		$not_in_count = substr_count( $sql, '[NOT_IN]' );
+		$not_in_count = substr_count( $sql, '[IN_NOT_IN]' );
 		if ( $not_in_count > 0 ){
-			$args = array( str_replace( '[NOT_IN]', implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) ), str_replace( '%', '%%', $sql ) ) );
-			for ( $i=0; $i < substr_count( $sql, '[NOT_IN]' ); $i++ ) { 
+			$args = array( str_replace( '[IN_NOT_IN]', implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) ), str_replace( '%', '%%', $sql ) ) );
+			for ( $i=0; $i < substr_count( $sql, '[IN_NOT_IN]' ); $i++ ) { 
 				$args = array_merge( $args, $post_ids );
 			}
 			$sql = call_user_func_array( array( $wpdb, 'prepare' ), $args );
@@ -679,11 +681,6 @@ PHP;
 							<tbody>
 							<?php 
 
-							if ( ! isset( $sub_field['type'] ) || empty( $sub_field['type'] ) ){
-								$sub_field['type'] = 'text';
-							}
-
-
 							if ( ! isset( $sub_field['function'] ) || empty( $sub_field['function'] ) ){
 								$sub_field['function'] = 'none';
 							}
@@ -802,7 +799,7 @@ PHP;
 				));
 
 				?>
-				<div id="<?php echo $html_key; ?>-editor" class='ace-editor' style="height:200px;"><?php echo $field['pattern']; ?></div>
+				<div id="<?php echo $field_id; ?>-editor" class='ace-editor' style="height:200px;"><?php echo $field['pattern']; ?></div>
 			</td>
 		</tr>
 		<?php
@@ -893,7 +890,7 @@ PHP;
 				ob_start();
 
 				// Render the subfield
-				acf_render_field_wrap( $sub_field );
+				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
 
 				// Try to make the field readonly
 				$contents = ob_get_contents();
@@ -910,7 +907,7 @@ PHP;
 				<?php
 
 			} else {
-				acf_render_field_wrap( $sub_field );
+				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
 			}
 			?>
 		</div>
@@ -972,7 +969,7 @@ PHP;
 	*  @return	n/a
 	*/
 	function input_admin_footer(){
-		wp_deregister_style( 'font-awesome' );
+		wp_deregister_style('font-awesome');
 		wp_enqueue_style( 'font-awesome', plugins_url( 'css/font-awesome/css/font-awesome.min.css', __FILE__ ), array(), '4.2.0' ); 
 		wp_enqueue_style( 'acf-validated_field', plugins_url( 'css/input.css', __FILE__ ), array(), ACF_VF_VERSION ); 
 	}
@@ -1122,13 +1119,12 @@ PHP;
 	*  @date	23/01/13
 	*
 	*  @param	$field - the field array holding all the field options
-	*  @param	$post_id - the field group ID (post_type = acf)
 	*
 	*  @return	$field - the modified field
 	*/
 	function update_field( $field ){
 		$sub_field = $this->setup_sub_field( $this->setup_field( $field ) );
-		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field, $post_id );
+		$sub_field = apply_filters( 'acf/update_field/type='.$sub_field['type'], $sub_field );
 		$field['sub_field'] = $sub_field;
 
 		// Just avoid using any type of quotes in the db values
