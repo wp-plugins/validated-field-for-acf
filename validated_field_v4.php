@@ -686,7 +686,7 @@ PHP;
 						'non-unique'=> __( 'Non-Unique Value', 'acf_vf' ),
 						'global'	=> __( 'Unique Globally', 'acf_vf' ),
 						'post_type'	=> __( 'Unique For Post Type', 'acf_vf' ),
-						'post_key'	=> __( 'Unique For Post Type', 'acf_vf' ) . ' -&gt; ' . __( 'Key', 'acf_vf' ),
+						'post_key'	=> __( 'Unique For Post Type', 'acf_vf' ) . ' + ' . __( 'Field/Meta Key', 'acf_vf' ),
 					),
 					'optgroup'	=> false,
 					'multiple'	=> '0',
