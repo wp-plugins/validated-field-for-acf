@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 4.1.1
-Stable tag: 1.5.1
+Stable tag: 1.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,16 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.6 = 
+* Show info/error message when input masking is used with the "number" field type as they are not compatible.
+* Upgrade to jQuery Masked Input version 1.4.1.
+* <strong><i>ACF5 only:</i></strong>
+ * Include unique value options of “Post" and "Post + Key".
+ * Check submitted values for duplicates when the field type is unique. This fixes the issue where duplicate values are added to a unique repeater field, or the same value is entered for multiple meta_keys when the unique type is "global", "post type", or "post".
+* Bug fix: Correctly call `$wpdb->esc_like()` as instance method for "globally unique" fields.
+* Bug fix: Improve field/sub field handling and to correctly populate "id" for use in HTML CSS selectors.
+
+
 = 1.5.1 =
 * Bug fix: Use better supported PHP syntax for getting repeater field index, props @dnrms.
 

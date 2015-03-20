@@ -272,10 +272,9 @@ class acf_field_validated_field extends acf_field {
 
 	function setup_field( $field ){
 		// setup booleans, for compatibility
-		return acf_prepare_field( array_merge( $this->defaults, $field ) );
-	}
+		$field = acf_prepare_field( array_merge( $this->defaults, $field ) );
 
-	function setup_sub_field( $field ){
+		// set up the sub_field
 		$sub_field = isset( $field['sub_field'] )? 
 			$field['sub_field'] :	// already set up
 			array();				// create it
@@ -286,12 +285,18 @@ class acf_field_validated_field extends acf_field {
 		}
 
 		// these fields need some special formatting
-		$sub_field['_input'] = $sub_field['prefix'].'['.$sub_field['key'].']';
-		$sub_field['name'] = $sub_field['prefix'].'['.$sub_field['key'].']';
-		$sub_field['id'] = str_replace( ']', '',str_replace( '[', '-', $sub_field['name'] ) );
-		
+		$sub_field['_input'] = $field['prefix'].'['.$sub_field['key'].']';
+		$sub_field['name'] = $field['prefix'].'['.$sub_field['key'].']';
+		$sub_field['id'] = str_replace( '-acfcloneindex', '', str_replace( ']', '',str_replace( '[', '-', $sub_field['name'] ) ) );
+
 		// make sure all the defaults are set
-		return array_merge( $this->sub_defaults, $sub_field );
+		$field['sub_field'] = array_merge( $this->sub_defaults, $sub_field );
+
+		return $field;
+	}
+
+	function setup_sub_field( $field ){
+		return $field['sub_field'];	
 	}
 
 	/*
@@ -371,6 +376,7 @@ class acf_field_validated_field extends acf_field {
 		}
 		
 		// the wrapped field
+		$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
 		
 		//$value = $input['value'];							// the submitted value
@@ -463,7 +469,63 @@ PHP;
 		}
 			
 		$unique = $field['unique'];
-		if ( $valid && ! empty( $value ) && ! empty( $unique ) && $unique != 'non-unique' ){
+		$field_is_unique = ! empty( $value ) && ! empty( $unique ) && $unique != 'non-unique';
+		
+		// validate the submitted values since there might be dupes in the form submit that aren't yet in the database
+		if ( $valid && $field_is_unique ){
+			$value_instances = 0;
+			switch ( $unique ){
+				case 'global';
+				case 'post_type':
+				case 'this_post':
+					// no duplicates at all allowed
+					foreach ( $_REQUEST['acf'] as $submitted ){
+						if ( is_array( $submitted ) ){
+							foreach ( $submitted as $row ){
+								// there is only one, but we don't know the key
+								foreach ( $row as $submitted2 ){
+									if ( $submitted2 == $value ){
+										$value_instances++;
+									}
+									break;
+								}
+							}
+						} else {
+							if ( $submitted == $value ){
+								$value_instances++;
+							}
+						}
+					}
+					break;
+				case 'post_key':
+				case 'this_post_key':
+					// only check the key for a repeater
+					if ( $is_repeater ){
+						foreach ( $_REQUEST['acf'] as $key => $submitted ){
+							if ( $key == $parent_field['key'] ){	
+								foreach ( $submitted as $row ){
+									// there is only one, but we don't know the key
+									foreach ( $row as $submitted2 ){
+										if ( $submitted2 == $value ){
+											$value_instances++;
+										}
+										break;
+									}
+								}
+							}
+						}
+					}
+					break;
+			}
+
+			// this value came up more than once, so we need to mark it as an error
+			if ( $value_instances > 1 ){
+				$message = __( 'The value', 'acf_vf' ) . " '$value' " . __( 'was submitted multiple times and should be unique for', 'acf_vf' ) . " {$field['label']}.";
+				$valid = false;
+			}
+		}
+
+		if ( $valid && $field_is_unique ){
 			global $wpdb;
 			$status_in = "'" . implode( "','", $field['unique_statuses'] ) . "'";
 
@@ -486,7 +548,7 @@ PHP;
 					$sql = $wpdb->prepare( 
 						"{$sql_prefix} AND post_id NOT IN ([IN_NOT_IN]) WHERE ( meta_value = %s OR meta_value LIKE %s )",
 						$value,
-						'%"' . wpdb::esc_like( $value ) . '"%'
+						'%"' . $wpdb->esc_like( $value ) . '"%'
 					);
 					break;
 				case 'post_type':
@@ -499,29 +561,72 @@ PHP;
 						'%"' . $wpdb->esc_like( $value ) . '"%'
 					);
 					break;
+				case 'this_post':
+					// check to see if this value exists in the postmeta table with this $post_id
+					$this_key = $is_repeater ? 
+						$parent_field['name'] . '_' . $index . '_' . $field['name'] :
+						$field['name'];
+					$sql = $wpdb->prepare( 
+						"{$sql_prefix} AND post_id IN ([IN_NOT_IN]) AND meta_key != %s AND ( meta_value = %s OR meta_value LIKE %s )",
+						$this_key,
+						$value,
+						'%"' . $wpdb->esc_like( $value ) . '"%'
+					);
+					break;
 				case 'post_key':
+				case 'this_post_key':
 					// check to see if this value exists in the postmeta table with both this $post_id and $meta_key
 					if ( $is_repeater ){
 						$this_key = $parent_field['name'] . '_' . $index . '_' . $field['name'];
 						$meta_key = $parent_field['name'] . '_%_' . $field['name'];
-						$sql = $wpdb->prepare(
-							"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id IN ([IN_NOT_IN]) AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id NOT IN ([IN_NOT_IN]) AND meta_key LIKE %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
-							$post_type,
-							$this_key,
-							$meta_key,
-							$meta_key,
-							$value,
-							'%"' . $wpdb->esc_like( $value ) . '"%'
-						);
+						if ( 'post_key' == $unique ){
+							$sql = $wpdb->prepare(
+								"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id IN ([IN_NOT_IN]) AND meta_key != %s AND meta_key LIKE %s ) OR ( post_id NOT IN ([IN_NOT_IN]) AND meta_key LIKE %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$post_type,
+								$this_key,
+								$meta_key,
+								$meta_key,
+								$value,
+								'%"' . $wpdb->esc_like( $value ) . '"%'
+							);
+						} else {
+							$sql = $wpdb->prepare(
+								"{$sql_prefix} WHERE post_id IN ([IN_NOT_IN]) AND meta_key != %s AND meta_key LIKE %s AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$this_key,
+								$meta_key,
+								$meta_key,
+								$value,
+								'%"' . $wpdb->esc_like( $value ) . '"%'
+							);
+						}
 					} else {
-						$sql = $wpdb->prepare( 
-							"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([IN_NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
-							$post_type,
-							$field['name'],
-							$value,
-							'%"' . $wpdb->esc_like( $value ) . '"%'
-						);
+						if ( 'post_key' == $unique ){
+							$sql = $wpdb->prepare( 
+								"{$sql_prefix} AND p.post_type = %s AND post_id NOT IN ([IN_NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$post_type,
+								$field['name'],
+								$value,
+								'%"' . $wpdb->esc_like( $value ) . '"%'
+							);
+						} else {
+							$sql = $wpdb->prepare( 
+								"{$sql_prefix} AND post_id IN ([IN_NOT_IN]) WHERE meta_key = %s AND ( meta_value = %s OR meta_value LIKE %s )", 
+								$field['name'],
+								$value,
+								'%"' . $wpdb->esc_like( $value ) . '"%'
+							);
+						}
 					}
+					break;
+				case 'this_post_key':
+					// check to see if this value exists in the postmeta table with this $post_id
+					$sql = $wpdb->prepare( 
+						"{$sql_prefix} AND p.post_type = %s WHERE ( ( post_id IN ([IN_NOT_IN]) AND meta_key = %s ) ) AND ( meta_value = %s OR meta_value LIKE %s )", 
+						$post_type,
+						$field['name'],
+						$value,
+						'%"' . $wpdb->esc_like( $value ) . '"%'
+					);
 					break;
 				default:
 					// no dice, set $sql to null
@@ -713,10 +818,22 @@ PHP;
 		</tr>
 		<?php
 
+		if ( !empty( $field['mask'] ) && $sub_field['type'] == 'number' ){
+
+		}
+
+		$mask_error = ( !empty( $field['mask'] ) && $sub_field['type'] == 'number' )? 
+			'color:red;' : '';
+
 		// Input Mask
 		acf_render_field_setting( $field, array(
 			'label'			=> __( 'Input mask', 'acf_vf' ),
-			'instructions'	=> __( 'Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ) . ' <a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new">' . __( 'More info', 'acf_vf' ) . '</a>.',
+			'instructions'	=> __( 'Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ) . 
+								' <a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new">' . 
+								__( 'More info', 'acf_vf' ) . 
+								'</a>.<br/><br/><strong style="' . $mask_error . '">' . 
+								__( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ) .
+								'</strong>',
 			'type'			=> 'text',
 			'name'			=> 'mask',
 			'prefix'		=> $field['prefix'],
@@ -830,6 +947,8 @@ PHP;
 				'global'		=> __( 'Unique Globally', 'acf_vf' ),
 				'post_type'		=> __( 'Unique For Post Type', 'acf_vf' ),
 				'post_key'		=> __( 'Unique For Post Type', 'acf_vf' ) . ' -&gt; ' . __( 'Key', 'acf_vf' ),
+				'this_post'		=> __( 'Unique For Post', 'acf_vf' ),
+				'this_post_key'		=> __( 'Unique For Post', 'acf_vf' ) . ' -&gt; ' . __( 'Key', 'acf_vf' ),
 			),
 			'layout'		=> 'horizontal',
 			'optgroup' 		=> false,
@@ -879,7 +998,7 @@ PHP;
 		$sub_field = $this->setup_sub_field( $field );
 
 		?>
-		<div class="validated-field">
+		<div class="validated-field <?php echo $sub_field['id']; ?>">
 			<?php
 			if ( $field['read_only'] && $field['read_only'] != 'false' ){
 
@@ -913,16 +1032,17 @@ PHP;
 			?>
 		</div>
 		<?php
-		if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ( ! $field['read_only'] || $field['read_only'] == 'false' ) ) ) ) { 
-
+		if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ( ! $field['read_only'] || $field['read_only'] == 'false' ) ) ) ) {
+			// we have to use $sub_field['key'] since new repeater fields don't have a unique ID
 			?>
 			<script type="text/javascript">
 				(function($){
-				   $('#<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>').mask('<?php echo $field['mask']?>');
+					$(".field_key-<?php echo $sub_field['key']; ?> input").each( function(){
+						$(this).mask("<?php echo $field['mask']?>");
+					});
 				})(jQuery);
 			</script>
 			<?php
-
 		}
 	}
 

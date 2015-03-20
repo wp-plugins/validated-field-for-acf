@@ -168,10 +168,9 @@ class acf_field_validated_field extends acf_field {
 		// setup booleans, for compatibility
 		$field['read_only'] = ( false == $field['read_only'] || 'false' === $field['read_only'] )? false : true;
 		$field['drafts'] = ( false == $field['drafts'] || 'false' === $field['drafts'] )? false : true;
-		return array_merge( $this->defaults, $field );
-	}
+		$field =  array_merge( $this->defaults, $field );
 
-	function setup_sub_field( $field ){
+
 		$sub_field = isset( $field['sub_field'] )? 
 			$field['sub_field'] :	// already set up
 			array();				// create it
@@ -179,8 +178,14 @@ class acf_field_validated_field extends acf_field {
 		foreach( array( 'key', 'name', '_name', 'id', 'value', 'field_group' ) as $key ){
 			$sub_field[$key] = isset( $field[$key] )? $field[$key] : '';
 		}
-		// make sure all the defaults are set
-		return array_merge( $this->sub_defaults, $sub_field );
+
+		$field['sub_field'] = array_merge( $this->sub_defaults, $sub_field );
+
+		return $field;
+	}
+
+	function setup_sub_field( $field ){
+		return $field['sub_field'];
 	}
 
 	/*
@@ -579,10 +584,9 @@ PHP;
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
-			<td class="label"><label><?php _e( 'Input Mask', 'acf_vf' ); ?> </label>
-			</td>
+			<td class="label"><label><?php _e( 'Input Mask', 'acf_vf' ); ?></label></td>
 			<td><?php _e( 'Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ); ?> 
-				<a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new"><?php _e( 'More info', 'acf_vf' ); ?></a>.<br />
+				<a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new"><?php _e( 'More info', 'acf_vf' ); ?></a>.
 				<?php 
 				do_action( 'acf/create_field', 
 					array(
@@ -591,12 +595,12 @@ PHP;
 						'value'	=> $field['mask'],
 					)
 				);
-				?>
+				?><br />
+				<strong><?php __( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ); ?></strong>
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
-			<td class="label"><label><?php _e( 'Validation Function', 'acf_vf' ); ?> </label>
-			</td>
+			<td class="label"><label><?php _e( 'Validation Function', 'acf_vf' ); ?></label></td>
 			<td><?php _e( "How should the field be server side validated?", 'acf_vf' ); ?><br />
 				<?php 
 				do_action( 'acf/create_field', 
