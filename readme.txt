@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 4.1.1
-Stable tag: 1.6
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,13 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.7 =
+* Update for compatibility with new Repeater/select2 implementation in ACF.
+* Dynamically copy field from parent to sub field allowing for greater flexibility in sub field type support.
+* Remove old code/comments.
+* Bug fix: Only trigger "change" event on sub field type when the field is a clone, not an existing field.
+* Bug fix: Fix processing of sub field "name" to correctly trigger ACF filters.
+
 = 1.6 = 
 * Show info/error message when input masking is used with the "number" field type as they are not compatible.
 * Upgrade to jQuery Masked Input version 1.4.1.

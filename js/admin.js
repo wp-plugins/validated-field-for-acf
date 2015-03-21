@@ -91,7 +91,13 @@
 		});
 
 		// get the ui state in order, make sure the sub field type is set up
-		$field.find('.validation-unique, .sub-field-settings select').trigger('change');
+		$field.find('.validation-unique').trigger('change');
+
+		$field.filter('.acf-sub_field').find('.field').each(function(){
+			if ( $(this).attr('id') == 'acfcloneindex' ){
+				$(this).find('select').trigger('change');
+			}
+		});
 
 		$field.data('validation-setup', 'true');
 	});

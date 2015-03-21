@@ -547,7 +547,7 @@ PHP;
 			<td>
 				<div class="sub-field">
 					<div class="fields">
-						<div class="field sub_field">
+						<div class="field sub_field acf-sub_field">
 							<div class="field_form">
 								<table class="acf_input widefat">
 									<tbody>

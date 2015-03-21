@@ -278,16 +278,17 @@ class acf_field_validated_field extends acf_field {
 		$sub_field = isset( $field['sub_field'] )? 
 			$field['sub_field'] :	// already set up
 			array();				// create it
+
 		// mask the sub field as the parent by giving it the same key values
-		$copy_fields = array( 'key', 'prefix', 'value', '_name', 'wrapper', 'parent', 'field_group', 'conditional_logic', 'class', 'ID', 'readonly', 'disabled', 'class', 'menu_order' );
-		foreach( $copy_fields as $key ){
-			$sub_field[$key] = isset( $field[$key] )? $field[$key] : '';
+		foreach( $field as $key => $value ){
+			if ( in_array( $key, array( 'sub_field', 'type' ) ) )
+				continue;
+			$sub_field[$key] = $value;
 		}
 
 		// these fields need some special formatting
 		$sub_field['_input'] = $field['prefix'].'['.$sub_field['key'].']';
-		$sub_field['name'] = $field['prefix'].'['.$sub_field['key'].']';
-		$sub_field['id'] = str_replace( '-acfcloneindex', '', str_replace( ']', '',str_replace( '[', '-', $sub_field['name'] ) ) );
+		$sub_field['id'] = str_replace( '-acfcloneindex', '', str_replace( ']', '', str_replace( '[', '-', $field['prefix'].'['.$sub_field['key'].']' ) ) );
 
 		// make sure all the defaults are set
 		$field['sub_field'] = array_merge( $this->sub_defaults, $sub_field );
@@ -716,7 +717,6 @@ PHP;
 			'name'			=> 'read_only',
 			'layout'		=> 'horizontal', 
 			'prefix'		=> $field['prefix'],
-			//'value'			=> ( empty( $field['read_only'] ) || 'false' === $field['read_only'] )? 'false' : 'true',
 			'choices'		=> array(
 				'' => __( 'No', 'acf_vf' ),
 				'1'	=> __( 'Yes', 'acf_vf' ),
@@ -730,7 +730,6 @@ PHP;
 			'type'			=> 'radio',
 			'name'			=> 'drafts',
 			'prefix'		=> $field['prefix'],
-			//'value'			=> ( false == $field['drafts'] || 'false' === $field['drafts'] )? 'false' : 'true',
 			'choices' => array(
 				'1'	=> __( 'Yes', 'acf_vf' ),
 				'' => __( 'No', 'acf_vf' ),
@@ -747,7 +746,7 @@ PHP;
 		}
 
 		?>
-		<tr class="acf-field" data-setting="validated_field" data-name="sub_field">
+		<tr class="acf-field acf-sub_field" data-setting="validated_field" data-name="sub_field">
 			<td class="acf-label">
 				<label><?php _e( 'Validated Field', 'acf_vf' ); ?></label>
 				<p class="description"></p>		
@@ -998,7 +997,7 @@ PHP;
 		$sub_field = $this->setup_sub_field( $field );
 
 		?>
-		<div class="validated-field <?php echo $sub_field['id']; ?>">
+		<div class="validated-field">
 			<?php
 			if ( $field['read_only'] && $field['read_only'] != 'false' ){
 
@@ -1027,7 +1026,10 @@ PHP;
 				<?php
 
 			} else {
+				// wrapper for other fields, especially relationship
+				echo "<div class='acf-field acf-field-{$sub_field['type']} field_type-{$sub_field['type']}' data-type='{$sub_field['type']}' data-key='{$sub_field['key']}'>";
 				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
+				echo "</div>";
 			}
 			?>
 		</div>
@@ -1210,11 +1212,7 @@ PHP;
 		$sub_field = apply_filters( 'acf/load_field/type='.$sub_field['type'], $sub_field );
 
 		// The relationship field gets settings from the sub_field so we need to return it since it effectively displays through this method.
-		if ( isset( $_POST['action'] ) && $_POST['action'] == 'acf/fields/relationship/query' ){
-			// Bug fix, if the taxonomy is "all" just omit it from the filter.
-			if ( $sub_field['taxonomy'][0] == 'all' ){
-				unset( $sub_field['taxonomy']);
-			}
+		if ( 'relationship' == $sub_field['type'] && isset( $_POST['action'] ) && $_POST['action'] == 'acf/fields/relationship/query' ){
 			return $sub_field;
 		}
 
