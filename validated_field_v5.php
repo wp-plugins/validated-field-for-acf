@@ -288,7 +288,8 @@ class acf_field_validated_field extends acf_field {
 
 		// these fields need some special formatting
 		$sub_field['_input'] = $field['prefix'].'['.$sub_field['key'].']';
-		$sub_field['id'] = str_replace( '-acfcloneindex', '', str_replace( ']', '', str_replace( '[', '-', $field['prefix'].'['.$sub_field['key'].']' ) ) );
+		$sub_field['name'] = $sub_field['_input'];
+		$sub_field['id'] = str_replace( '-acfcloneindex', '', str_replace( ']', '', str_replace( '[', '-', $sub_field['_input'] ) ) );
 
 		// make sure all the defaults are set
 		$field['sub_field'] = array_merge( $this->sub_defaults, $sub_field );
@@ -1213,6 +1214,8 @@ PHP;
 
 		// The relationship field gets settings from the sub_field so we need to return it since it effectively displays through this method.
 		if ( 'relationship' == $sub_field['type'] && isset( $_POST['action'] ) && $_POST['action'] == 'acf/fields/relationship/query' ){
+			// the name is the key, so use _name
+			$sub_field['name'] = $sub_field['_name'];
 			return $sub_field;
 		}
 
