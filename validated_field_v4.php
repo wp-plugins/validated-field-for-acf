@@ -347,6 +347,11 @@ PHP;
 								$valid = false;
 							} 
 						}
+						// if a string is returned, return it as the error.
+						if ( is_string( $valid ) ){
+							$message = $valid;
+							$valid = false;
+						}
 						break;
 				}
 			} elseif ( ! empty( $function ) && $function != 'none' ) {
@@ -828,6 +833,7 @@ PHP;
 				do_action( 'acf/create_field', $sub_field ); 
 				$contents = ob_get_contents();
 				$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true readonly", $contents );
+				$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
 				ob_end_clean();
 				echo $contents;
 				?></p>

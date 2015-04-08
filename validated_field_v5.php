@@ -77,6 +77,8 @@ class acf_field_validated_field extends acf_field {
 			'id'		=> '',
 			'value'		=> '',
 			'field_group' => '',
+			'readonly' => '',
+			'disabled' => '',
 		);
 
 		$this->input_defaults = array(
@@ -461,6 +463,11 @@ PHP;
 							$message = __( 'PHP Error', 'acf_vf' ) . ': ' . $error['message'] . ', line ' . $matches[1] . '.';
 							$valid = false;
 						} 
+					}
+					// if a string is returned, return it as the error.
+					if ( is_string( $valid ) ){
+						$message = $valid;
+						$valid = false;
 					}
 					$message = stripslashes( $message );
 					break;
@@ -1015,6 +1022,7 @@ PHP;
 				// Try to make the field readonly
 				$contents = ob_get_contents();
 				$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true read_only", $contents );
+				$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
 
 				// Stop buffering
 				ob_end_clean();
@@ -1028,9 +1036,9 @@ PHP;
 
 			} else {
 				// wrapper for other fields, especially relationship
-				echo "<div class='acf-field acf-field-{$sub_field['type']} field_type-{$sub_field['type']}' data-type='{$sub_field['type']}' data-key='{$sub_field['key']}'>";
+				echo "<div class='acf-field acf-field-{$sub_field['type']} field_type-{$sub_field['type']}' data-type='{$sub_field['type']}' data-key='{$sub_field['key']}'><div class='acf-input'>";
 				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
-				echo "</div>";
+				echo "</div></div>";
 			}
 			?>
 		</div>

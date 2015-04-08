@@ -1,2 +1,3 @@
 .validated-select { width: 200px; }
 .validation-type { display: none; }
+.acf-vf-readonly { display: block !important; }	
