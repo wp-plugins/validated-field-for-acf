@@ -810,7 +810,7 @@ PHP;
 							), 'tr' );			
 
 							// Render the Sub Field
-							acf_render_field_settings( $sub_field );
+							do_action( "acf/render_field_settings/type={$sub_field['type']}", $sub_field );
 
 							?>
 							<tr class="field_save acf-field" data-name="conditional_logic" style="display:none;">

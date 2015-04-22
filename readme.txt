@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
 Tested up to: 4.1.1
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 4. Example of PHP validation failure with the error message raised to the UI.
 
 == Changelog ==
+= 1.7.3 =
+* Replace call to `acf_render_field_settings()` with action `acf/render_field_settings/type=?` to support ACF 5.2.3+.
+
 = 1.7.2 =
 * Allow `$message` to be returned from PHP code instead of `false` to fail validation.
   * Example code: `if ( !filter_var( $value, FILTER_VALIDATE_URL ) ) return 'You must use a valid URL.';`
