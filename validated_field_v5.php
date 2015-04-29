@@ -361,8 +361,8 @@ class acf_field_validated_field extends acf_field {
 		if ( ! $valid )
 			return $valid;
 
-		// get ID of the submit post or cpt
-		$post_id = $_POST['acf']['post_ID'];
+		// get ID of the submit post or cpt, allow null for options page
+		$post_id = isset( $_POST['acf']['post_ID'] )? $_POST['acf']['post_ID'] : null;
 
 		$post_type = get_post_type( $post_id );				// the type of the submitted post
 		$frontend = isset( $_REQUEST['acf']['frontend'] )?
