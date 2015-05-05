@@ -7,7 +7,7 @@ Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The Validated Field add-on for Advanced Custom Fields provides input masking and validation of other field types.
+The Validated Field add-on for Advanced Custom Fields provides input masking and server side validation of other field types.
 
 == Description ==
 = Validated Field Add-On =
@@ -44,10 +44,12 @@ Validated Field will appear as a new input type in the field group editor.
 Global configurations for the Validated Field plugin can be found in the WordPress Admin under `Custom Fields > Validated Field Settings`.
 
 == Screenshots ==
-1. Example configuration to validate a telephone number field.
-2. Example of a conflict - the same telephone number already exists, with a link to the existing record.
-3. Example of PHP validation - checking the length of a field’s value.
-4. Example of PHP validation failure with the error message raised to the UI.
+1. Example configuration for input masking and regular expression checking of a telephone number field.
+2. Example of client-side input masking on a telephone number field.
+3. Example of failing to pass a regular expression check (phone number is incomplete).
+4. Example of failing to pass a uniqueness check - the telephone number is already in use by post "Test 1".
+5. Example of PHP validation configuration. This code will fail if the request comes from "127.0.0.1" with the message "You cannot save from localhost!".
+6. Example of client side PHP validation failure.
 
 == Changelog ==
 = 1.7.4 =
