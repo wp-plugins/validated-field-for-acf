@@ -1,13 +1,13 @@
 === Advanced Custom Fields: Validated Field ===
 Contributors: doublesharp
-Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
+Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit, admin, post, page, meta
 Requires at least: 3.0
 Tested up to: 4.2.1
 Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The Validated Field add-on for Advanced Custom Fields provides input masking and server side validation of other field types.
+The Validated Field add-on for Advanced Custom Fields provides input masking and server-side validation of other field types.
 
 == Description ==
 = Validated Field Add-On =
@@ -20,7 +20,7 @@ IDE with autocomplete and syntax validation.
 
 = Features =
 1. **Input Masking** - easily set masks on text inputs to ensure data is properly formatted.
-2. **Server Side Validation** - validate the inputs using server side PHP code or regular expressions.
+2. **Server-Side Validation** - validate the inputs using server side PHP code or regular expressions.
 3. **Uniqueness** - ensure that the value being updated is not already in use.
 4. **Repeater Fields** - validated fields within a [Repeater Field](http://www.advancedcustomfields.com/add-ons/repeater-field/).
 5. **Read Only** - specify a field as read-only allowing it to be displayed but not updated.
