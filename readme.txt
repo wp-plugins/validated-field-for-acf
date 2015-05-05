@@ -2,7 +2,7 @@
 Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit
 Requires at least: 3.0
-Tested up to: 4.1.1
+Tested up to: 4.2.1
 Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -14,26 +14,30 @@ The Validated Field add-on for Advanced Custom Fields provides input masking and
 The **Validated Field** add-on for [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/)
 provides a wrapper for other input types which allows you to provide client side input masking using the jQuery 
 [Masked Input Plugin](http://digitalbush.com/projects/masked-input-plugin/), server side validation using either PHP regular expressions 
-or PHP code, the option of ensuring a field's uniqueness by `post_type` and `meta_key`, `post_type`, or site wide, as well as marking a field as read-only.
+or PHP code, the option of ensuring a field's uniqueness for all posts by `post_type` and `meta_key`, `post_type`, or site wide, or a 
+single post by meta_key, as well as marking a field as read-only. Edit your fields in the ACF Field Group editor and update code using the ACE.js
+IDE with autocomplete and syntax validation.
 
 = Features =
 1. **Input Masking** - easily set masks on text inputs to ensure data is properly formatted.
 2. **Server Side Validation** - validate the inputs using server side PHP code or regular expressions.
 3. **Uniqueness** - ensure that the value being updated is not already in use.
 4. **Repeater Fields** - validated fields within a [Repeater Field](http://www.advancedcustomfields.com/add-ons/repeater-field/).
-5. **Read Only** - specify a field as read-only allowing it to be displayed but not updated. *BETA*
+5. **Read Only** - specify a field as read-only allowing it to be displayed but not updated.
+6. **WordPress Multi Language** - compatible with multilingual sites using the WPML plugin.
+7. **Conditional Logic** - show and hide validated fields based on the values of other "switch" fields.
 
 = Compatibility =
 Requires [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) version 4.0 or greater.
 
 == Installation ==
-1. Download the plugin and extract to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure validated fields within the Advanced Custom Fields menus
+1. Download the plugin and extract to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Configure validated fields within the Advanced Custom Fields menus.
 
 == Frequently Asked Questions ==
 = I've activated the Validated Field plugin, but nothing happens =
-Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed, and that it is activated. 
+Ensure that you have [Advanced Custom Fields](http://wordpress.org/extend/plugins/advanced-custom-fields/) installed and that it is activated. 
 Validated Field will appear as a new input type in the field group editor.
 
 = Configuration Options =
@@ -50,8 +54,10 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Update CSS to properly handle visibility of validated fields via conditional logic when the default visibility is hidden for new entries.
 * Bug fix: Remove warning when trying to access the Post ID when it is not available, on Options pages for example.
 
+
 = 1.7.3 =
 * Replace call to `acf_render_field_settings()` with action `acf/render_field_settings/type=?` to support ACF 5.2.3+.
+
 
 = 1.7.2 =
 * Allow `$message` to be returned from PHP code instead of `false` to fail validation.
@@ -61,12 +67,14 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 * Include additional default sub field values to prevent array index errors.
 * Update to work with the latest version of ACF JavaScript validation - requires nested `<div>` to properly append error message to the correct input field.
 
+
 = 1.7.1 =
 * Update for compatibility with new Repeater/select2 implementation in ACF.
 * Dynamically copy field from parent to sub field allowing for greater flexibility in sub field type support.
 * Remove old code/comments.
 * Bug fix: Only trigger "change" event on sub field type when the field is a clone, not an existing field.
 * Bug fix: Fix processing of sub field "name" to correctly trigger ACF filters.
+
 
 = 1.6 = 
 * Show info/error message when input masking is used with the "number" field type as they are not compatible.
