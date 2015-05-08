@@ -894,9 +894,8 @@ PHP;
 							</ul>
 							</li>
 							<li><?php _e( 'Example', 'acf_vf' ); ?>: 
-							<small><code><pre>if ( empty( $value ) ){
-  $message = 'required!'; 
-  return false;
+							<small><code><pre>if ( $value == "123" ){
+  return '123 is not valid!';
 }</pre></code></small></li>
 						</ul>
 					</div>
