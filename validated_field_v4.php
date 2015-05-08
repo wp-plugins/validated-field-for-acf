@@ -640,7 +640,7 @@ PHP;
 						<ul>
 							<li><?php _e( "Use any PHP code and return true or false. If nothing is returned it will evaluate to true.", 'acf_vf' ); ?></li>
 							<li><?php _e( 'Available variables', 'acf_vf' ); ?> - <b>$post_id</b>, <b>$post_type</b>, <b>$name</b>, <b>$value</b>, <b>$prev_value</b>, <b>&amp;$message</b> (<?php _e('returned to UI', 'acf_vf' ); ?>).</li>
-							<li><?php _e( 'Example', 'acf_vf' ); ?>: <code>if ( empty( $value ) ){ $message = sprint_f( $message, get_current_user()->user_login ); return false; }</code></li>
+							<li><?php _e( 'Example', 'acf_vf' ); ?>: <code>if ( empty( $value ) || $value == "xxx" ){  return "{$value} is not allowed"; }</code></li>
 						</ul>
 					</div>
 					<div class='validation-type sql'>
