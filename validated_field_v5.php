@@ -103,7 +103,7 @@ class acf_field_validated_field extends acf_field {
 			add_filter( 'acf/get_valid_field', array( $this, 'fix_upgrade' ) );
 
 			// override the default ajax actions to provide our own messages since they aren't filtered
-			add_action( 'init', array( $this, 'override_acf_ajax_validation' ) );
+			add_action( 'init', array( $this, 'add_acf_ajax_validation' ) );
 
 			if ( ! is_admin() && $this->frontend ){
 				if ( ! $this->frontend_css ){
@@ -191,10 +191,7 @@ class acf_field_validated_field extends acf_field {
 		return $array;
 	}
 
-	function override_acf_ajax_validation(){
-		remove_all_actions( 'wp_ajax_acf/validate_save_post' );
-		remove_all_actions( 'wp_ajax_nopriv_acf/validate_save_post' );
-
+	function add_acf_ajax_validation(){
 		add_action( 'wp_ajax_acf/validate_save_post',			array( $this, 'ajax_validate_save_post') );
 		add_action( 'wp_ajax_nopriv_acf/validate_save_post',	array( $this, 'ajax_validate_save_post') );
 	}
@@ -224,9 +221,13 @@ class acf_field_validated_field extends acf_field {
 	}
 
 	function admin_head(){
+		global $typenow;
+
 		$min = ( ! $this->debug )? '.min' : '';
-		wp_register_script( 'acf-validated-field-admin', plugins_url( "js/admin{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );
-		wp_register_script( 'acf-validated-field-group', plugins_url( "js/field-group{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );
+		if ( $this->is_edit_page() && "acf-field-group" == $typenow ){
+			wp_register_script( 'acf-validated-field-admin', plugins_url( "js/admin{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );	
+		}
+		//wp_register_script( 'acf-validated-field-group', plugins_url( "js/field-group{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );
 		wp_enqueue_script( array(
 			'jquery',
 			'acf-validated-field-admin',
@@ -1261,6 +1262,28 @@ PHP;
 		$field['pattern'] = str_replace( '"', "%%dquot%%", $field['pattern'] );
 
 		return $field;
+	}
+
+	/**
+	* is_edit_page 
+	* function to check if the current page is a post edit page
+	* 
+	* @author Ohad Raz <admin@bainternet.info>
+	* 
+	* @param  string  $new_edit what page to check for accepts new - new post page ,edit - edit post page, null for either
+	* @return boolean
+	*/
+	function is_edit_page($new_edit = null){
+		global $pagenow;
+		//make sure we are on the backend
+		if ( !is_admin() ) return false;
+
+		if($new_edit == "edit")
+			return in_array( $pagenow, array( 'post.php',  ) );
+		elseif($new_edit == "new") //check for new post page
+			return in_array( $pagenow, array( 'post-new.php' ) );
+		else //check for either new or edit
+			return in_array( $pagenow, array( 'post.php', 'post-new.php' ) );
 	}
 }
 
