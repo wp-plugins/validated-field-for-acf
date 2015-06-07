@@ -129,7 +129,6 @@ class acf_field_validated_field extends acf_field {
 	}
 
 	function fix_upgrade( $field ){
-
 		// the $_POST will tell us if this is an upgrade
 		$is_5_upgrade = 
 			isset( $_POST['action'] ) && $_POST['action'] == 'acf/admin/data_upgrade' && 
@@ -176,7 +175,6 @@ class acf_field_validated_field extends acf_field {
 	}
 
 	function do_recursive_slash_fix( $array ){
-
 		// loop through all levels of the array
 		foreach( $array as $key => &$value ){
 			if ( is_array( $value ) ){
@@ -192,6 +190,11 @@ class acf_field_validated_field extends acf_field {
 	}
 
 	function add_acf_ajax_validation(){
+		global $acf;
+		if ( version_compare( $acf->settings['version'], '5.2.6', '<' ) ){
+			remove_all_actions( 'wp_ajax_acf/validate_save_post' );
+			remove_all_actions( 'wp_ajax_nopriv_acf/validate_save_post' );
+		}
 		add_action( 'wp_ajax_acf/validate_save_post',			array( $this, 'ajax_validate_save_post') );
 		add_action( 'wp_ajax_nopriv_acf/validate_save_post',	array( $this, 'ajax_validate_save_post') );
 	}
@@ -221,13 +224,15 @@ class acf_field_validated_field extends acf_field {
 	}
 
 	function admin_head(){
-		global $typenow;
+		global $typenow, $acf;
 
 		$min = ( ! $this->debug )? '.min' : '';
 		if ( $this->is_edit_page() && "acf-field-group" == $typenow ){
 			wp_register_script( 'acf-validated-field-admin', plugins_url( "js/admin{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );	
 		}
-		//wp_register_script( 'acf-validated-field-group', plugins_url( "js/field-group{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );
+		if ( version_compare( $acf->settings['version'], '5.2.6', '<' ) ){
+			wp_register_script( 'acf-validated-field-group', plugins_url( "js/field-group{$min}.js", __FILE__ ), array( 'jquery', 'acf-field-group' ), ACF_VF_VERSION );
+		}
 		wp_enqueue_script( array(
 			'jquery',
 			'acf-validated-field-admin',
