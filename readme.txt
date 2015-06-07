@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, unique, input, edit, admin, post, page, meta
 Requires at least: 3.0
 Tested up to: 4.2.1
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,10 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 6. Example of client side PHP validation failure.
 
 == Changelog ==
+= 1.7.5 =
+* Update for compatibility with ACF version 5.2.6+. 
+
+
 = 1.7.4 =
 * Update CSS to properly handle visibility of validated fields via conditional logic when the default visibility is hidden for new entries.
 * Bug fix: Remove warning when trying to access the Post ID when it is not available, on Options pages for example.
