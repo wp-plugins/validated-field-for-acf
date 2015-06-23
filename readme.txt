@@ -52,6 +52,23 @@ Global configurations for the Validated Field plugin can be found in the WordPre
 6. Example of client side PHP validation failure.
 
 == Changelog ==
+= 1.7.6 =
+* ACF4
+ * Update for jQuery mask compatibility with ACF version 4.4.2+.
+ * Improved support for use of single and double quotes within the validation pattern.
+ * Use the same `eval()` implementation as ACF5 handler.
+ * Derive add-on file basename for error handling.
+* ACF5
+ * Update for jQuery mask compatibility with ACF version 5.2.7+.
+ * Derive add-on file basename for error handling.
+* Additional jQuery Masked Input options:
+ * Autoclear values `Yes` or `No` - determine if a value should be automatically cleared if it does not match the mask. The previous default was `Yes`.
+ * Placeholder - use a different character or string as a placeholder to be displayed as the user is entering their input.
+* Filters for future add-on support.
+* Updated Spanish translations.
+* Added Serbo-Croatian translations courtesy of Andrijana Nikolic / [WebHostingGeeks](http://webhostinggeeks.com/).
+ 
+
 = 1.7.5 =
 * Update for compatibility with ACF version 5.2.6+. 
 

@@ -61,6 +61,8 @@ class acf_field_validated_field extends acf_field {
 		$this->defaults = array(
 			'read_only' => false,
 			'mask'		=> '',
+			'mask_autoclear' => true,
+			'mask_placeholder' => '_',
 			'function'	=> 'none',
 			'pattern'	=> '',
 			'message'	=>  __( 'Validation failed.', 'acf_vf' ),
@@ -398,6 +400,10 @@ class acf_field_validated_field extends acf_field {
 			return $valid;									// we aren't publishing and we don't want to validate drafts
 		}
 		
+		if ( is_array( $value ) ){
+			$value = implode( ',', $value );
+		}
+
 		$function = $field['function'];						// what type of validation?
 		$pattern = $field['pattern'];						// string to use for validation
 		$message = $field['message'];						// failure message to return to the UI
@@ -431,17 +437,16 @@ class acf_field_validated_field extends acf_field {
 					$message = $field['message'];			// the default message
 
 					// not yet saved to the database, so this is the previous value still
-					$prev_value = get_post_meta( $post_id, $this_key, true );
+					$prev_value = addslashes( get_post_meta( $post_id, $this_key, true ) );
 
 					// unique function for this key
 					$function_name = 'validate_' . $field['key'] . '_function';
 					
 					// it gets tricky but we are trying to account for an capture bad php code where possible
-					$pattern = addcslashes( trim( $pattern ), '$' );
+					$pattern = addcslashes( addslashes( trim( $pattern ) ), '$' );
 					if ( substr( $pattern, -1 ) != ';' ) $pattern.= ';';
 
 					$value = addslashes( $value );
-					$prev_value = addslashes( $prev_value );
 
 					// this must be left aligned as it contains an inner HEREDOC
 					$php = <<<PHP
@@ -464,7 +469,7 @@ PHP;
 					if ( true !== eval( $php ) ){			// run the eval() in the eval()
 						$error = error_get_last();			// get the error from the eval() on failure
 						// check to see if this is our error or not.
-						if ( strpos( $error['file'], "validated_field_v5.php" ) && strpos( $error['file'], "eval()'d code" ) ){
+						if ( strpos( $error['file'], basename( __FILE__ ) ) && strpos( $error['file'], "eval()'d code" ) ){
 							preg_match( '/eval\\(\\)\'d code\\((\d+)\\)/', $error['file'], $matches );
 							$message = __( 'PHP Error', 'acf_vf' ) . ': ' . $error['message'] . ', line ' . $matches[1] . '.';
 							$valid = false;
@@ -732,8 +737,8 @@ PHP;
 			'layout'		=> 'horizontal', 
 			'prefix'		=> $field['prefix'],
 			'choices'		=> array(
-				'' => __( 'No', 'acf_vf' ),
-				'1'	=> __( 'Yes', 'acf_vf' ),
+				false 	=> __( 'No', 'acf_vf' ),
+				true	=> __( 'Yes', 'acf_vf' ),
 			)
 		));
 
@@ -744,9 +749,9 @@ PHP;
 			'type'			=> 'radio',
 			'name'			=> 'drafts',
 			'prefix'		=> $field['prefix'],
-			'choices' => array(
-				'1'	=> __( 'Yes', 'acf_vf' ),
-				'' => __( 'No', 'acf_vf' ),
+			'choices' 		=> array(
+				true  	=> __( 'Yes', 'acf_vf' ),
+				false 	=> __( 'No', 'acf_vf' ),
 			),
 			'layout'		=> 'horizontal',
 		));
@@ -844,14 +849,39 @@ PHP;
 			'instructions'	=> __( 'Use &#39;a&#39; to match A-Za-z, &#39;9&#39; to match 0-9, and &#39;*&#39; to match any alphanumeric.', 'acf_vf' ) . 
 								' <a href="http://digitalbush.com/projects/masked-input-plugin/" target="_new">' . 
 								__( 'More info', 'acf_vf' ) . 
-								'</a>.<br/><br/><strong style="' . $mask_error . '">' . 
+								'</a>.<br/><br/><strong style="' . $mask_error . '"><em>' . 
 								__( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ) .
-								'</strong>',
+								'</em></strong>',
 			'type'			=> 'text',
 			'name'			=> 'mask',
 			'prefix'		=> $field['prefix'],
 			'value'			=> $field['mask'],
 			'layout'		=> 'horizontal',
+		));
+
+		// Input Mask
+		acf_render_field_setting( $field, array(
+			'label'			=> __('Autoclear invalid values?', 'acf_vf' ),
+			'instructions'	=> __( 'Clear values that do match the input mask, if provided.', 'acf_vf' ),
+			'type'			=> 'radio',
+			'name'			=> 'mask_autoclear',
+			'prefix'		=> $field['prefix'],
+			'value'			=> $field['mask_autoclear'],
+			'layout'		=> 'horizontal',
+			'choices' => array(
+				true  	=> __( 'Yes', 'acf_vf' ),
+				false 	=> __( 'No', 'acf_vf' ),
+			)
+		));
+
+		// Input Mask
+		acf_render_field_setting( $field, array(
+			'label'			=> __('Input mask placeholder', 'acf_vf' ),
+			'instructions'	=> __( 'Use this string or character as a placeholder for the input mask.', 'acf_vf' ),
+			'type'			=> 'text',
+			'name'			=> 'mask_placeholder',
+			'prefix'		=> $field['prefix'],
+			'value'			=> $field['mask_placeholder']
 		));
 
 		// Validation Function
@@ -1001,65 +1031,80 @@ PHP;
 	*/
 	
 	function render_field( $field ) {
-
 		global $post, $pagenow;
 
-		$is_new = $pagenow=='post-new.php';
-
+		// set up field properties
 		$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
 
-		?>
-		<div class="validated-field">
-			<?php
-			if ( $field['read_only'] && $field['read_only'] != 'false' ){
+		// determine if this is a new post or an edit
+		$is_new = $pagenow=='post-new.php';
 
-				?>
-				<p>
-				<?php 
+		// filter to determine if this field should be rendered or not
+		$render_field = apply_filters( 'acf_vf/render_field', true, $field, $is_new );
 
-				// Buffer output
-				ob_start();
-
-				// Render the subfield
-				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
-
-				// Try to make the field readonly
-				$contents = ob_get_contents();
-				$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true read_only", $contents );
-				$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
-
-				// Stop buffering
-				ob_end_clean();
-
-				// Return our (hopefully) readonly input.
-				echo $contents;
-
-				?>
-				</p>
-				<?php
-
-			} else {
-				// wrapper for other fields, especially relationship
-				echo "<div class='acf-field acf-field-{$sub_field['type']} field_type-{$sub_field['type']}' data-type='{$sub_field['type']}' data-key='{$sub_field['key']}'><div class='acf-input'>";
-				echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
-				echo "</div></div>";
-			}
-			?>
-		</div>
+		// if it is not rendered, hide the label with CSS
+		if ( ! $render_field ): ?>
+			<style>div[data-key="<?php echo $sub_field['key']; ?>"] { display: none; }</style>
 		<?php
-		if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ( ! $field['read_only'] || $field['read_only'] == 'false' ) ) ) ) {
-			// we have to use $sub_field['key'] since new repeater fields don't have a unique ID
-			?>
-			<script type="text/javascript">
-				(function($){
-					$(".field_key-<?php echo $sub_field['key']; ?> input").each( function(){
-						$(this).mask("<?php echo $field['mask']?>");
-					});
-				})(jQuery);
-			</script>
+		// if it is shown either render it normally or as read-only
+		else : ?>
+			<div class="validated-field">
+				<?php
+				// for read only we need to buffer the output so that we can modify it
+				if ( $field['read_only'] && $field['read_only'] != 'false' ){
+
+					?>
+					<p>
+					<?php 
+
+					// Buffer output
+					ob_start();
+
+					// Render the subfield
+					echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
+
+					// Try to make the field readonly
+					$contents = ob_get_contents();
+					$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true read_only", $contents );
+					$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
+
+					// Stop buffering
+					ob_end_clean();
+
+					// Return our (hopefully) readonly input.
+					echo $contents;
+
+					?>
+					</p>
+					<?php
+
+				} else {
+					// wrapper for other fields, especially relationship
+					echo "<div class='acf-field acf-field-{$sub_field['type']} field_type-{$sub_field['type']}' data-type='{$sub_field['type']}' data-key='{$sub_field['key']}'><div class='acf-input'>";
+					echo apply_filters( 'acf/render_field/type='.$sub_field['type'], $sub_field );
+					echo "</div></div>";
+				}
+				?>
+			</div>
 			<?php
-		}
+			// check to see if we need to mask the input
+			if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ( ! $field['read_only'] || $field['read_only'] == 'false' ) ) ) ) {
+				// we have to use $sub_field['key'] since new repeater fields don't have a unique ID
+				?>
+				<script type="text/javascript">
+					(function($){
+						$("div[data-key='<?php echo $sub_field['key']; ?>'] input").each( function(){
+							$(this).mask("<?php echo $field['mask']?>", {
+								autoclear: <?php echo isset( $field['mask_autoclear'] ) && empty( $field['mask_autoclear'] )? 'false' : 'true'; ?>,
+								placeholder: '<?php echo isset( $field['mask_placeholder'] )? $field['mask_placeholder'] : '_'; ?>'
+							});
+						});
+					})(jQuery);
+				</script>
+				<?php
+			}
+		endif;
 	}
 
 	/*

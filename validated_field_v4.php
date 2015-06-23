@@ -60,6 +60,8 @@ class acf_field_validated_field extends acf_field {
 		$this->defaults = array(
 			'read_only' => false,
 			'mask'		=> '',
+			'mask_autoclear' => true,
+			'mask_placeholder' => '_',
 			'function'	=> 'none',
 			'pattern'	=> '',
 			'message'	=>  __( 'Validation failed.', 'acf_vf' ),
@@ -301,22 +303,25 @@ class acf_field_validated_field extends acf_field {
 						}
 
 						// it gets tricky but we are trying to account for an capture bad php code where possible
-						$pattern = addcslashes( trim( $pattern ), "'" );
+						$pattern = addcslashes( trim( $pattern ), '$' );
 						if ( substr( $pattern, -1 ) != ';' ) $pattern.= ';';
 
 						$value = addslashes( $value );
 
-						$prev_value = addslashes( $prev_value );
+						// not yet saved to the database, so this is the previous value still
+						$prev_value = addslashes( get_post_meta( $post_id, $this_key, true ) );
 
 						$function_name = 'validate_' . preg_replace( '~[\\[\\]]+~', '_', $input['id'] ) . 'function';
 						
-					$php = <<<PHP
+						$php = <<<PHP
 if ( ! function_exists( '$function_name' ) ):
 function $function_name( \$args, &\$message ){
 	extract( \$args );
 	try {
-		\$code = '$pattern return true;';
-		return eval( \$code );
+		\$code = <<<INNERPHP
+		$pattern return true;
+INNERPHP;
+		return @eval( \$code );
 	} catch ( Exception \$e ){
 		\$message = "Error: ".\$e->getMessage(); return false;
 	}
@@ -325,23 +330,10 @@ endif; // function_exists
 \$valid = $function_name( array( 'post_id'=>'$post_id', 'post_type'=>'$post_type', 'this_key'=>'$this_key', 'value'=>'$value', 'prev_value'=>'$prev_value', 'inputs'=>\$input_fields ), \$message );
 PHP;
 
-						// it gets tricky but we are trying to account for an capture bad php code where possible
-						$pattern = trim( $pattern );
-						if ( substr( $pattern, -1 ) != ';' ) $pattern.= ';';
-						$php = 'function '.$function_name.'( $post_id, $post_type, $name, $value, $prev_value, $inputs, &$message ) { '."\n";
-						$php.= '	try { '."\n";
-						$php.= '		$code = \'' . str_replace("'", "\'", $pattern . ' return true;' ) . '\';'."\n";
-						$php.= '		return eval( $code ); '."\n";
-						$php.= '	} catch ( Exception $e ){ '."\n";
-						$php.= '		$message = "Error: ".$e->getMessage(); return false; '."\n";
-						$php.= '	} '."\n";
-						$php.= '} '."\n";
-						$php.= '$valid = '.$function_name.'( "'.$post_id.'", "'.$post_type.'", "'.$this_key.'", "'.addslashes( $value ).'", "'.addslashes( $prev_value ).'", $inputs, $message );'."\n";
-						
 						if ( true !== eval( $php ) ){			// run the eval() in the eval()
 							$error = error_get_last();			// get the error from the eval() on failure
 							// check to see if this is our error or not.
-							if ( strpos( $error['file'], "validated_field_v4.php" ) && strpos( $error['file'], "eval()'d code" ) ){
+							if ( strpos( $error['file'], basename( __FILE__ ) ) && strpos( $error['file'], "eval()'d code" ) ){
 								preg_match( '/eval\\(\\)\'d code\\((\d+)\\)/', $error['file'], $matches );
 								$message = __( 'PHP Error', 'acf_vf' ) . ': ' . $error['message'] . ', line ' . $matches[1] . '.';
 								$valid = false;
@@ -601,7 +593,33 @@ PHP;
 					)
 				);
 				?><br />
-				<strong><?php __( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ); ?></strong>
+				<label for="">Autoclear invalid values: </label>
+				<?php 
+				do_action( 'acf/create_field', 
+					array(
+						'type'	=> 'radio',
+						'name'	=> 'fields[' . $key . '][mask_autoclear]',
+						'value'	=> $field['mask_autoclear'],
+						'layout'	=>	'horizontal',
+						'choices' => array(
+							true => 'Yes',
+							false => 'No'
+						)
+					)
+				);
+				?><br />
+				<label for="">Input mask placeholder: </label>
+				<?php 
+				do_action( 'acf/create_field', 
+					array(
+						'type'	=> 'text',
+						'name'	=> 'fields[' . $key . '][mask_placeholder]',
+						'value'	=> $field['mask_placeholder'],
+					)
+				);
+				?><br />
+
+				<strong><em><?php _e( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ); ?><em></strong>
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
@@ -823,35 +841,50 @@ PHP;
 		$is_new = $pagenow=='post-new.php';
 		$field = $this->setup_field( $field );
 		$sub_field = $this->setup_sub_field( $field );
-		?>
-		<div class="validated-field">
-			<?php
-			if ( $field['read_only'] ){
-				?>
-				<p><?php 
-				ob_start();
-				do_action( 'acf/create_field', $sub_field ); 
-				$contents = ob_get_contents();
-				$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true readonly", $contents );
-				$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
-				ob_end_clean();
-				echo $contents;
-				?></p>
+
+		// filter to determine if this field should be rendered or not
+		$render_field = apply_filters( 'acf_vf/render_field', true, $field, $is_new );
+
+		// if it is not rendered, hide the label with CSS
+		if ( ! $render_field ): ?>
+			<style>div[data-key="<?php echo $sub_field['key']; ?>"] { display: none; }</style>
+		<?php
+		// if it is shown either render it normally or as read-only
+		else : ?>
+			<div class="validated-field">
 				<?php
-			} else {
-				do_action( 'acf/create_field', $sub_field ); 
+				if ( $field['read_only'] ){
+					?>
+					<p><?php 
+					ob_start();
+					do_action( 'acf/create_field', $sub_field ); 
+					$contents = ob_get_contents();
+					$contents = preg_replace("~<(input|textarea|select)~", "<\${1} disabled=true readonly", $contents );
+					$contents = preg_replace("~acf-hidden~", "acf-hidden acf-vf-readonly", $contents );
+					ob_end_clean();
+					echo $contents;
+					?></p>
+					<?php
+				} else {
+					do_action( 'acf/create_field', $sub_field ); 
+				}
+				?>
+			</div>
+			<?php
+			if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ! $field['read_only'] ) ) ) { ?>
+				<script type="text/javascript">
+					jQuery(function($){
+						$('div[data-field_key="<?php echo $field['key']; ?>"] input').each( function(){
+							$(this).mask("<?php echo $field['mask']?>", {
+								autoclear: <?php echo isset( $field['mask_autoclear'] ) && empty( $field['mask_autoclear'] )? 'false' : 'true'; ?>,
+								placeholder: '<?php echo isset( $field['mask_placeholder'] )? $field['mask_placeholder'] : '_'; ?>'
+							});
+						});
+					});
+				</script>
+			<?php
 			}
-			?>
-		</div>
-		<?php
-		if ( ! empty( $field['mask'] ) && ( $is_new || ( isset( $field['read_only'] ) && ! $field['read_only'] ) ) ) { ?>
-			<script type="text/javascript">
-				jQuery(function($){
-				   $('[name="<?php echo str_replace('[', '\\\\[', str_replace(']', '\\\\]', $field['name'])); ?>"]').mask('<?php echo $field['mask']?>');
-				});
-			</script>
-		<?php
-		}
+		endif;
 	}
 
 	/*
@@ -868,10 +901,11 @@ PHP;
 	function input_admin_enqueue_scripts(){
 		// register acf scripts
 		$min = ( ! $this->debug )? '.min' : '';
-		wp_register_script( 'acf-validated-field', $this->settings['dir'] . "js/input{$min}.js", array( 'jquery' ), $this->settings['version'] );
-		wp_register_script( 'jquery-masking', $this->settings['dir'] . "js/jquery.maskedinput{$min}.js", array( 'jquery' ), $this->settings['version']);
-		wp_register_script( 'sh-core', $this->settings['dir'] . 'js/shCore.js', array( 'acf-input' ), $this->settings['version'] );
-		wp_register_script( 'sh-autoloader', $this->settings['dir'] . 'js/shAutoloader.js', array( 'sh-core' ), $this->settings['version']);
+
+		wp_register_script( 'acf-validated-field', plugins_url( "js/input{$min}.js", __FILE__ ), array( 'jquery' ), $this->settings['version'] );
+		wp_register_script( 'jquery-masking', plugins_url( "js/jquery.maskedinput{$min}.js", __FILE__ ), array( 'jquery' ), $this->settings['version']);
+		wp_register_script( 'sh-core', plugins_url( 'js/shCore.js', __FILE__ ), array( 'acf-input' ), $this->settings['version'] );
+		wp_register_script( 'sh-autoloader', plugins_url( 'js/shAutoloader.js', __FILE__ ), array( 'sh-core' ), $this->settings['version']);
 		
 		// enqueue scripts
 		wp_enqueue_script( array(
