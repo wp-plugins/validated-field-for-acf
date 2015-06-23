@@ -443,7 +443,7 @@ class acf_field_validated_field extends acf_field {
 					$function_name = 'validate_' . $field['key'] . '_function';
 					
 					// it gets tricky but we are trying to account for an capture bad php code where possible
-					$pattern = addcslashes( addslashes( trim( $pattern ) ), '$' );
+					$pattern = addcslashes( trim( $pattern ), '$' );
 					if ( substr( $pattern, -1 ) != ';' ) $pattern.= ';';
 
 					$value = addslashes( $value );
@@ -466,6 +466,8 @@ endif; // function_exists
 \$valid = $function_name( array( 'post_id'=>'$post_id', 'post_type'=>'$post_type', 'this_key'=>'$this_key', 'value'=>'$value', 'prev_value'=>'$prev_value', 'inputs'=>\$input_fields ), \$message );
 PHP;
 
+echo $php;
+die();
 					if ( true !== eval( $php ) ){			// run the eval() in the eval()
 						$error = error_get_last();			// get the error from the eval() on failure
 						// check to see if this is our error or not.
