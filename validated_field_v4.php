@@ -590,6 +590,7 @@ PHP;
 						'type'	=> 'text',
 						'name'	=> 'fields[' . $key . '][mask]',
 						'value'	=> $field['mask'],
+						'class'	=> 'input-mask'
 					)
 				);
 				?><br />
@@ -604,7 +605,8 @@ PHP;
 						'choices' => array(
 							true => 'Yes',
 							false => 'No'
-						)
+						),
+						'class'	=> 'mask-settings'
 					)
 				);
 				?><br />
@@ -615,15 +617,15 @@ PHP;
 						'type'	=> 'text',
 						'name'	=> 'fields[' . $key . '][mask_placeholder]',
 						'value'	=> $field['mask_placeholder'],
+						'class'	=> 'mask-settings'
 					)
 				);
 				?><br />
-
 				<strong><em><?php _e( 'Input masking is not compatible with the "number" field type!', 'acf_vf' ); ?><em></strong>
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> non_read_only">
-			<td class="label"><label><?php _e( 'Validation Function', 'acf_vf' ); ?></label></td>
+			<td class="label"><label><?php _e( 'Validation: Function', 'acf_vf' ); ?></label></td>
 			<td><?php _e( "How should the field be server side validated?", 'acf_vf' ); ?><br />
 				<?php 
 				do_action( 'acf/create_field', 
@@ -646,7 +648,7 @@ PHP;
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_validation non_read_only" id="field_option_<?php echo $html_key; ?>_validation">
-			<td class="label"><label><?php _e( 'Validation Pattern', 'acf_vf' ); ?></label>
+			<td class="label"><label><?php _e( 'Validation: Pattern', 'acf_vf' ); ?></label>
 			</td>
 			<td>
 				<div id="validated-<?php echo $html_key; ?>-info">
@@ -679,7 +681,7 @@ PHP;
 			</td>
 		</tr>
 		<tr class="field_option field_option_<?php echo $this->name; ?> field_option_<?php echo $this->name; ?>_message non_read_only" id="field_option_<?php echo $html_key; ?>_message">
-			<td class="label"><label><?php _e( 'Error Message', 'acf_vf' ); ?></label>
+			<td class="label"><label><?php _e( 'Validation: Error Message', 'acf_vf' ); ?></label>
 			</td>
 			<td><?php 
 			do_action( 'acf/create_field', 
@@ -719,7 +721,7 @@ PHP;
 			?>
 			</p>
 			<div class="unique_statuses">
-			<p><?php _e( 'Apply to which post statuses?', 'acf_vf'); ?><br/>
+			<p><?php _e( 'Unique Value: Apply to...?', 'acf_vf'); ?><br/>
 			<?php
 			$statuses = $this->get_post_statuses();
 			$choices = array();

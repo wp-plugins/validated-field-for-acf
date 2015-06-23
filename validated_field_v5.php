@@ -466,8 +466,6 @@ endif; // function_exists
 \$valid = $function_name( array( 'post_id'=>'$post_id', 'post_type'=>'$post_type', 'this_key'=>'$this_key', 'value'=>'$value', 'prev_value'=>'$prev_value', 'inputs'=>\$input_fields ), \$message );
 PHP;
 
-echo $php;
-die();
 					if ( true !== eval( $php ) ){			// run the eval() in the eval()
 						$error = error_get_last();			// get the error from the eval() on failure
 						// check to see if this is our error or not.
@@ -859,11 +857,12 @@ die();
 			'prefix'		=> $field['prefix'],
 			'value'			=> $field['mask'],
 			'layout'		=> 'horizontal',
+			'class'			=> 'input-mask'
 		));
 
 		// Input Mask
 		acf_render_field_setting( $field, array(
-			'label'			=> __('Autoclear invalid values?', 'acf_vf' ),
+			'label'			=> __('Input Mask: Autoclear', 'acf_vf' ),
 			'instructions'	=> __( 'Clear values that do match the input mask, if provided.', 'acf_vf' ),
 			'type'			=> 'radio',
 			'name'			=> 'mask_autoclear',
@@ -873,22 +872,24 @@ die();
 			'choices' => array(
 				true  	=> __( 'Yes', 'acf_vf' ),
 				false 	=> __( 'No', 'acf_vf' ),
-			)
+			),
+			'class'			=> 'mask-settings'
 		));
 
 		// Input Mask
 		acf_render_field_setting( $field, array(
-			'label'			=> __('Input mask placeholder', 'acf_vf' ),
+			'label'			=> __('Input Mask: Placeholder', 'acf_vf' ),
 			'instructions'	=> __( 'Use this string or character as a placeholder for the input mask.', 'acf_vf' ),
 			'type'			=> 'text',
 			'name'			=> 'mask_placeholder',
 			'prefix'		=> $field['prefix'],
-			'value'			=> $field['mask_placeholder']
+			'value'			=> $field['mask_placeholder'],
+			'class'			=> 'mask-settings'
 		));
 
 		// Validation Function
 		acf_render_field_setting( $field, array(
-			'label'			=> __( 'Validation Function', 'acf_vf' ),
+			'label'			=> __( 'Validation: Function', 'acf_vf' ),
 			'instructions'	=> __( 'How should the field be server side validated?', 'acf_vf' ),
 			'type'			=> 'select',
 			'name'			=> 'function',
@@ -909,7 +910,7 @@ die();
 		?>
 		<tr class="acf-field validation-settings" data-setting="validated_field" data-name="pattern" id="field_option_<?php echo $html_key; ?>_validation">
 			<td class="acf-label">
-				<label><?php _e( 'Pattern', 'acf_vf' ); ?></label>
+				<label><?php _e( 'Validation: Pattern', 'acf_vf' ); ?></label>
 				<p class="description">	
 				<small>
 				<div class="validation-info">
@@ -968,7 +969,7 @@ die();
 
 		// Error Message
 		acf_render_field_setting( $field, array(
-			'label'			=> __( 'Error Message', 'acf_vf' ),
+			'label'			=> __( 'Validation: Error Message', 'acf_vf' ),
 			'instructions'	=> __( 'The default error message that is returned to the client.', 'acf_vf' ),
 			'type'			=> 'text',
 			'name'			=> 'message',
@@ -1007,7 +1008,7 @@ die();
 			$choices[$value] = $status->label;
 		}
 		acf_render_field_setting( $field, array(
-			'label'			=> __( 'Apply to...?', 'acf_vf' ),
+			'label'			=> __( 'Unique Value: Apply to...?', 'acf_vf' ),
 			'instructions'	=> __( "Make sure this value is unique for the checked post statuses.", 'acf_vf' ),
 			'type'			=> 'checkbox',
 			'name'			=> 'unique_statuses',

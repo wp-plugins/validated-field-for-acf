@@ -42,11 +42,12 @@
 		$field.find('.validation-function').on('change',function(){
 			$field.find('.validation-info div').hide(300);
 			$field.find('.validation-info div.'+$(this).val()).show(300);
-			if ($(this).val()!='none'){
-				$field.find('.validation-settings').show(300);
-			} else {
-				$field.find('.validation-settings').hide(300);
-			}
+
+			$display = $(this).val()!='none';
+			$field.find('.validation-settings').each(function(){
+				$setting = ($(this).hasClass('acf-field'))? $(this) : $(this).closest('.acf-field');
+				$toggle = ($display)? $setting.show(300) : $setting.hide(300);
+			});
 			var sPhp = '<'+'?'+'php';
 			var editor = $field.find('.ace-editor').data('editor');
 			var val = editor.getValue();
@@ -83,6 +84,15 @@
 			}
 		});
 		$field.find('.validation-function').trigger('change');
+
+		$field.find('.input-mask').on('change keyup blur',function(){
+			$display = $(this).val()!='';
+			$field.find('.mask-settings').each(function(){
+				$setting = ($(this).hasClass('acf-field'))? $(this) : $(this).closest('.acf-field');
+				$toggle = ($display)? $setting.show(300) : $setting.hide(300);
+			});
+		});
+		$field.find('.input-mask').trigger('change');
 
 		$field.find('.validation-unique').on('change',function(){
 			var unqa = $(this).closest('.field_type-validated_field').find('tr[data-name="unique_statuses"]');
