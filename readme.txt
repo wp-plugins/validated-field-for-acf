@@ -88,7 +88,7 @@ Global configurations for the Validated Field plugin can be found in the WordPre
   * Validation will fail if `$value` is not a URL, otherwise the default validation return is `true`.
 * Clean up handling of read only/hidden select fields.
 * Include additional default sub field values to prevent array index errors.
-* Update to work with the latest version of ACF JavaScript validation - requires nested `<div>` to properly append error message to the correct input field.
+* Update to work with the latest version of ACF JavaScript validation - requires nested `DIV` to properly append error message to the correct input field.
 
 
 = 1.7.1 =
