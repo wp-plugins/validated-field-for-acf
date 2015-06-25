@@ -3,7 +3,7 @@ Contributors: doublesharp
 Tags: acf, advanced custom fields, validation, validate, regex, php, mask, input, readonly, add-on, addon, add on, unique, input, edit, admin, post, page, meta
 Requires at least: 3.0
 Tested up to: 4.2.1
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,8 +62,8 @@ Global configurations for the Validated Field plugin can be found in the WordPre
  * Update for jQuery mask compatibility with ACF version 5.2.7+.
  * Derive add-on file basename for error handling.
 * Additional jQuery Masked Input options:
- * Autoclear values `Yes` or `No` - determine if a value should be automatically cleared if it does not match the mask. The previous default was `Yes`.
- * Placeholder - use a different character or string as a placeholder to be displayed as the user is entering their input.
+ * `Autoclear`: `Yes` or `No` - determine if a value should be automatically cleared if it does not match the mask. The previous default was `Yes`.
+ * `Placeholder`: 'char or string` - use a different character or string as a placeholder to be displayed as the user is entering their input.
 * Filters for future add-on support.
 * Updated Spanish translations.
 * Added Serbo-Croatian translations courtesy of Andrijana Nikolic / [WebHostingGeeks](http://webhostinggeeks.com/).
