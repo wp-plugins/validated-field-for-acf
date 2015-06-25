@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Validated Field for ACF\n"
-"POT-Creation-Date: 2015-06-23 12:03-0800\n"
-"PO-Revision-Date: 2015-06-23 12:12-0800\n"
+"POT-Creation-Date: 2015-06-23 00:36-0800\n"
+"PO-Revision-Date: 2015-06-25 00:39-0800\n"
 "Last-Translator: Justin Silver <jsilver@doublesharp.com>\n"
 "Language-Team: DoubleSharp <info@doublesharp.com>\n"
 "Language: sr\n"
@@ -153,7 +153,7 @@ msgstr "Više informacija"
 
 #: ../validated_field_v4.php:624 ../validated_field_v5.php:853
 msgid "Input masking is not compatible with the \"number\" field type!"
-msgstr "Ulazni maskiranje nije kompatibilan s \"brojem\" type polju!"
+msgstr "Unos maskiranja nije kompatibilan sa vrstom polja \"broj\"! "
 
 #: ../validated_field_v4.php:628 ../validated_field_v5.php:892
 msgid "Validation: Function"
@@ -235,7 +235,7 @@ msgstr "Jedinstvena za vrstu posta"
 #: ../validated_field_v4.php:714 ../validated_field_v5.php:994
 #: ../validated_field_v5.php:996
 msgid "Field/Meta Key"
-msgstr "Polje / Meta Key"
+msgstr "Field/Meta Key"
 
 #: ../validated_field_v4.php:724 ../validated_field_v5.php:1011
 msgid "Unique Value: Apply to...?"
@@ -256,19 +256,19 @@ msgstr "validacija nije"
 
 #: ../validated_field_v5.php:363
 msgid "Please check your values and submit again."
-msgstr "Molimo Vas da provjerite vaše vrijednosti i dostaviti ponovo."
+msgstr "Proverite svoje vrednosti i podnesite ponovo."
 
 #: ../validated_field_v5.php:543
 msgid "was submitted multiple times and should be unique for"
-msgstr "je dostavljen više puta, a trebalo bi da bude jedinstvena za"
+msgstr "podnet je više puta, a treba da bude jedinstven za "
 
 #: ../validated_field_v5.php:734
 msgid ""
 "When a field is marked read only, it will be visible but uneditable. Read "
 "only fields are marked with "
 msgstr ""
-"Kada polje je označena samo za čitanje, to će biti vidljiv, ali uneditable. "
-"Pročitajte samo polja su označena sa"
+"Kad polje ima oznaku “samo za čitanje”, biće vidljivo, ali neće moći da se "
+"uređuje. Polja samo za čitanje označena su"
 
 #: ../validated_field_v5.php:815
 msgid "The underlying field type that you would like to validate."
@@ -284,7 +284,7 @@ msgstr "Ulazna maska: Autoclear"
 
 #: ../validated_field_v5.php:866
 msgid "Clear values that do match the input mask, if provided."
-msgstr "Jasne vrijednosti koje rade odgovaraju ulaza masku, ako postoji."
+msgstr "Obriši vrednosti koje se poklapaju sa maskom unosa, ako su unete."
 
 #: ../validated_field_v5.php:881
 msgid "Input Mask: Placeholder"
@@ -292,7 +292,7 @@ msgstr "Ulazna maska: Placeholder"
 
 #: ../validated_field_v5.php:882
 msgid "Use this string or character as a placeholder for the input mask."
-msgstr "Koristite ovaj string ili znak kao mesta za unos masku."
+msgstr "Koristi ovaj niz karaktera kao zamenski tekst za unos maske"
 
 #: ../validated_field_v5.php:923
 msgid ""
@@ -308,7 +308,7 @@ msgstr "obrazac"
 
 #: ../validated_field_v5.php:973
 msgid "The default error message that is returned to the client."
-msgstr "Poruka default greške koja se vraća klijentu."
+msgstr "Podrazumevana poruka o grešci koja se vraća klijentu"
 
 #: ../validated_field_v5.php:995 ../validated_field_v5.php:996
 msgid "Unique For Post"
@@ -316,19 +316,8 @@ msgstr "Jedinstven za posta"
 
 #: ../validated_field_v5.php:1012
 msgid "Make sure this value is unique for the checked post statuses."
-msgstr "Pobrinite se ova vrijednost je jedinstven za provjeriti post statusa."
-
-#~ msgid "Validation Function"
-#~ msgstr "Funkcija validiranja"
-
-#~ msgid "Validation Pattern"
-#~ msgstr "Obrazac validiranja"
-
-#~ msgid "Error Message"
-#~ msgstr "Poruka o grešci"
-
-#~ msgid "Apply to which post statuses?"
-#~ msgstr "Na koje statuse posta treba primeniti?"
+msgstr ""
+"Proverite da li je ova vrednost jedinstvena za štiklirane statuse postova."
 
 #~ msgid "More info."
 #~ msgstr "Više informacija"
