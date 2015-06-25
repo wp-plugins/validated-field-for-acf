@@ -447,8 +447,9 @@ PHP;
 		}
 		
 		// Send the results back to the browser as JSON
-		echo json_encode( $return_fields, $this->debug? JSON_PRETTY_PRINT : 0 );
-		die();
+		die( version_compare( phpversion(), '5.3', '>=' )? 
+			json_encode( $return_fields, $this->debug? JSON_PRETTY_PRINT : 0 ) :
+			json_encode( $return_fields ) );
 	}
 
 	private function prepare_not_in( $sql, $post_ids ){
